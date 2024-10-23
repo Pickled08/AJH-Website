@@ -65,6 +65,7 @@ a, a:active, a:visited {
 
 p {
     padding: 14px;
+    padding-left: 28px;
     font-size: large;
 }
 

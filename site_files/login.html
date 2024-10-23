@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+
+    <head>{% include "elements/head.html" %}</head>
+
+    <body>
+        {% include "elements/navbar.html" %}
+
+        {% if username %}
+            <h>Logging you in...</h>
+        {% else %}
+            <h>Login</h>
+            <br>
+            <form method="post">
+                {{form.hidden_tag()}}
+
+                {{form.username.lable}}
+                {{form.username()}}
+                <br>
+                {{form.password.lable}}
+                {{form.password()}}
+                <br>
+                {{form.submit()}}
+            </form>
+        {% endif %}
+
+    </body>
+
+    <footer>{% include "elements/footer.html" %}</footer>
+
+</html>
