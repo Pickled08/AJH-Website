@@ -16,26 +16,15 @@
                 <p class="black-shadow-text">The page you were looking for could not be found
                     <br>
                     <br>
-                    <a class="button" href="/">Home</a>
+                    <a class="button" href="{{ url_for('index') }}">Home</a>
                 </p>
             </div>
         </div>
     </body>
     <footer>
-        Alexander Howard
+        {% include "elements/footer.html" %}
         <br>
         <br>
-        <a class="link" href="/contact" >Contact</a>
-        •
-        <a class="link" href="https://github.com/Pickled08">GitHub</a>
-        •
-        <a class="link" href="/sitemap" >Site Map</a>
-        •
-        <a class="link" href="/policies/privacy" >Privacy Policy</a>
-        •
-        <a class="link" href="/policies/cookies" >Cookie Policy</a>
-        <br>
-        <br>
-        <a href="https://www.flaticon.com/free-icons/404" title="404 icons">404 icons created by Freepik - Flaticon</a>
+        <a class="x-small-text" href="https://www.flaticon.com/free-icons/404" title="404 icons">404 icons created by Freepik - Flaticon</a>
     </footer>
 </html>

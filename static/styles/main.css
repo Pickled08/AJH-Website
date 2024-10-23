@@ -114,10 +114,47 @@ button {
     background-color: #0B0E0D;
 }
 
+.button:hover {
+    color: #313F44;
+}
+
+
 .black-shadow-text {
     text-shadow: 2px 2px #0B0E0D;
 }
 
 .black-shadow-box {
     box-shadow: 4px 4px #0B0E0D;
+}
+
+.xx-small-text {
+    font-size: xx-small;
+}
+
+.x-small-text {
+    font-size: x-small;
+}
+
+.small-text {
+    font-size: small;
+}
+
+.medium-text {
+    font-size: medium;
+}
+
+.large-text {
+    font-size: large;
+}
+
+.larger-text {
+    font-size: larger;
+}
+
+.x-large-text {
+    font-size: x-large;
+}
+
+.xx-large-text {
+    font-size: xx-large;
 }
