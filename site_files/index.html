@@ -3,9 +3,12 @@
     <head>{% include "elements/head.html" %}</head>
 
     {% include "elements/navbar.html" %}
-    
+
     <body>
         
+        {% if current_user.is_authenticated %}
+            <P>Hi {{ current_user.name }}!</P>
+        {% endif %}
 
         <div>
             <br>

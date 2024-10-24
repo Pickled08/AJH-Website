@@ -19,16 +19,28 @@
     {% elif pageName == 'Projects' %}
     {% elif pageName == 'Blog' %}
     {% elif pageName == 'Contact' %}
+    {% elif pageName == 'Login' %}
     {% else %}
     <li>
         <a class="active" href="{{ url_for(request.endpoint) }}"> {{ pageName }} </a>
     </li>
     {% endif %}
+    {% if current_user.is_authenticated %}
+    <li class="right-nav">
+      <a {% if pageName == 'Account' %} class="active right-nav" {% endif %} href="{{url_for('account')}}">Account</a>
+    </li>
+    {% else %}
+    <li class="right-nav">
+      <a {% if pageName == 'Login' %} class="active" {% endif %} href="{{url_for('login')}}">Login</a>
+    </li>
+    {% endif %}
 </ul>
+
 
 {% for message in get_flashed_messages() %}
 <div class="alert">
   <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span> 
   {{message|safe}}
 </div>
+
 {% endfor %}

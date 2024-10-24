@@ -15,6 +15,8 @@ load_dotenv()
 
 #.env variables
 SECRET_KEY = os.getenv("SECRET_KEY")
+RECAPTCHA_PUBLIC_KEY = os.getenv("RECAPTCHA_PUBLIC_KEY")
+RECAPTCHA_PRIVATE_KEY = os.getenv("RECAPTCHA_PRIVATE_KEY")
 
 #Setup Variables
 app = Flask(__name__)
@@ -24,6 +26,8 @@ app.config["SECRET_KEY"] = SECRET_KEY
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///users.db"
 app.config['TRAP_HTTP_EXCEPTIONS']=True
 app.config["DEBUG"] = False
+app.config["RECAPTCHA_PUBLIC_KEY"] = RECAPTCHA_PUBLIC_KEY
+app.config["RECAPTCHA_PRIVATE_KEY"] = RECAPTCHA_PRIVATE_KEY
 
 #Initialize Database
 db = SQLAlchemy(app)
@@ -57,6 +61,7 @@ class Users(db.Model, UserMixin):
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
+login_manager.login_message = "Please Login"
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -65,7 +70,6 @@ def load_user(user_id):
 #Home Page
 @app.route("/")
 def index():
-    flash("Home Page")
     return render_template("index.html", pageName="Home")
 
 #About Page
@@ -108,6 +112,10 @@ def privacy_policy():
 def cookie_policy():
     abort(404)
 
+@app.route("/account")
+def account():
+    abort(404)
+
 #Register Page
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -125,6 +133,7 @@ def register():
             user = Users(name=form.name.data, email=email, password_hash=hashed_pw)
             db.session.add(user)
             db.session.commit()
+            flash("Account Registerd")
         else:
             return render_template("register.html", pageName="Register",exists=True, form=form)
         name = form.name.data
@@ -134,6 +143,7 @@ def register():
         form.email.data = ""
         form.password_hash.data = ""
         form.password_hash2.data = ""
+        return redirect(url_for("index"))
     return render_template("register.html", pageName="Register", name=name, email=email, form=form)
 
 #Login Page
@@ -157,7 +167,7 @@ def login():
 
         if user:
             if check_password_hash(user.password_hash, password):
-                login_user(user)
+                login_user(user, remember=True)
                 flash("Logged In")
                 return redirect(url_for("index"))
             else:

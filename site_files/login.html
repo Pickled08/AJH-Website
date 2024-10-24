@@ -7,23 +7,31 @@
 
     <body>
 
-        {% if email %}
+        {% if passed %}
             <h>Logging you in...</h>
-            {{ passed }}
         {% else %}
-            <h>Login</h>
-            <br>
-            <form method="post">
-                {{form.hidden_tag()}}
+            <div class="center-screen">
+                <div>
+                    <h class="title">Login</h>
+                    <br>
+                    <br>
+                    <form method="post" >
+                        {{form.hidden_tag()}}
 
-                <p>Email</p>
-                {{form.email()}}
-                <br>
-                <p>Password</p>
-                {{form.password_hash()}}
-                <br>
-                {{form.submit()}}
-            </form>
+                        <p>Email</p>
+                        {{form.email()}}
+                        <br>
+                        <p>Password</p>
+                         {{form.password_hash()}}
+                        <br>
+                        <br>
+                        {{form.submit(class="button")}}
+                        <br>
+                        <br>
+                        <a class="button" href="{{url_for('register')}}">Don't have and account?</a>
+                    </form>
+                </div>
+            </div>
         {% endif %}
 
     </body>
