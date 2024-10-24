@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+
+    <head>{% include "elements/head.html" %}</head>
+
+
+    <body>
+        <div class="center-screen">
+            <div>
+                <img id="img-fof" class="black-shadow-box" src="{{url_for('static', filename='icons/lock.png')}}" />
+                <br>
+                <br>
+                <h class="black-shadow-text">401 Unauthorized</h>
+                <br>
+                <p class="black-shadow-text">You are not authorized to enter this part of the site<br>Try logging in again
+                    <br>
+                    <br>
+                    <a class="button" href="{{ url_for('login') }}">Login</a>
+                </p>
+            </div>
+        </div>
+    </body>
+    <footer>
+        {% include "elements/footer.html" %}
+        <br>
+        <br>
+        <a class="x-small-text" href="https://www.flaticon.com/free-icons/pixel" title="pixel icons">Pixel icons created by menon - Flaticon</a>
+    </footer>
+</html>

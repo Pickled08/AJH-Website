@@ -23,7 +23,7 @@ li a:hover:not(.active) {
 }
   
 .active {
-    background-color: #7D98A1;
+    background-color: #A9B4C2;
 }
 body {
     background-color: #1C2321;
@@ -116,7 +116,7 @@ button {
 }
 
 .button:hover {
-    color: #313F44;
+    background-color: #313F44;
 }
 
 
@@ -159,3 +159,24 @@ button {
 .xx-large-text {
     font-size: xx-large;
 }
+
+.alert {
+    padding: 20px;
+    background-color: #A9B4C2;
+    color: #0B0E0D;
+  }
+  
+  .closebtn {
+    margin-left: 15px;
+    color: #0B0E0D;
+    font-weight: bold;
+    float: right;
+    font-size: 22px;
+    line-height: 20px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  
+  .closebtn:hover {
+    color: #313F44;
+  }
