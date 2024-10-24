@@ -32,12 +32,6 @@
                 {{form.submit()}}
             </form>
         {% endif %}
-
-        <br>
-        <br>
-        {% for our_user in our_users %}
-            {{ our_user.id}} - {{ our_user.name }} - {{ our_user.email }} - {{our_user.password_hash}}
-        {% endfor %}
     </body>
 
     <footer>{% include "elements/footer.html" %}</footer>
