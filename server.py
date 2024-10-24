@@ -4,13 +4,15 @@ from threading import Thread
 from flask import render_template, abort, redirect, url_for, flash
 import os
 from dotenv import load_dotenv
-from webforms import LoginForm, RegisterForm
+from webforms import LoginForm, RegisterForm, TTSForm
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import datetime, UTC
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
 import json
+from gtts import gTTS
+import vlc
 
 load_dotenv()
 
@@ -96,6 +98,27 @@ def blog():
 @app.route("/contact")
 def contact():
     abort(404)
+
+#Fun Stuff
+@app.route("/fun")
+def fun():
+    return(render_template("fun.html", pageName="Fun"))
+
+@app.route("/fun/tts", methods=["GET", "POST"])
+def fun_tts():
+    input = None
+    form = TTSForm()
+    if form.validate_on_submit():
+        input = form.input.data
+        print(f"TTS: {input}")
+        tts = gTTS(input)
+        tts.save("audio/output.mp3")
+        p = vlc.MediaPlayer("audio/output.mp3")
+        p.play()
+
+
+    form.input.data = ""
+    return(render_template("fun_tts.html", pageName="Fun", input=input, form=form))
 
 #Github Link
 @app.route("/github")

@@ -14,12 +14,17 @@
     <li>
       <a {% if pageName == 'Contact' %} class="active" {% endif %} href="{{ url_for('contact')}}"> Contact </a>
     </li>
+    <li>
+      <a {% if pageName == 'Fun' %} class="active" {% endif %} href="{{ url_for('fun')}}"> Fun </a>
+    </li>
     {% if pageName == 'Home' %}
     {% elif pageName == 'About' %}
     {% elif pageName == 'Projects' %}
     {% elif pageName == 'Blog' %}
     {% elif pageName == 'Contact' %}
     {% elif pageName == 'Login' %}
+    {% elif pageName == 'Account' %}
+    {% elif pageName == 'Fun' %}
     {% else %}
     <li>
         <a class="active" href="{{ url_for(request.endpoint) }}"> {{ pageName }} </a>

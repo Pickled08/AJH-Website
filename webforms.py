@@ -17,3 +17,7 @@ class RegisterForm(FlaskForm):
     password_hash2 =PasswordField("Confirm Password", validators=[DataRequired()])
     #recaptcha = RecaptchaField()
     submit = SubmitField("Register")
+
+class TTSForm(FlaskForm):
+    input = StringField("Input", validators=[DataRequired(), Length(max=20)])
+    submit = SubmitField("Send")
