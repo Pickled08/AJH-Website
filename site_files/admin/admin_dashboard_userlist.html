@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin | User lists</title><link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/admin.css') }}"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+{% for message in get_flashed_messages() %}
+<div class="alert">
+  <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span> 
+  {{message|safe}}
+</div>
+
+{% endfor %}
+
+<body>
+
+<h2>Users</h2>
+<a href="{{url_for('admin')}}">Admin dashboard</a>
+<br>
+<br>
+
+<table>
+  <tr>
+    <th>ID</th>
+    <th>Name</th>
+    <th>Email</th>
+    <th>Date added</th>
+    <th>Delete User</th>
+  </tr>
+  {% for user in registeredUsers %}
+  <tr>
+    <th>{{ user.id }}</th>
+    <th>{{ user.name }}</th>
+    <th>{{ user.email }}</th>
+    <th>{{ user.date_added }}</th>
+    <th><a href="{{url_for('admin_delete_user', id='')}}{{user.id}}">Delete</a></th>
+  </tr>
+  {% endfor %}
+</table>
+
+</body>
+</html>

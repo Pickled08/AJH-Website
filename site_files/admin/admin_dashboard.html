@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <title>Admin</title><link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/admin.css') }}"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+
+    {% for message in get_flashed_messages() %}
+    <div class="alert">
+      <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span> 
+      {{message|safe}}
+    </div>
+    
+    {% endfor %}
+
+
+    <body>
+        <a href="{{url_for('admin_pages', page='users')}}">User List</a>
+    </body>
+
+</html>

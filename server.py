@@ -10,6 +10,7 @@ from flask_migrate import Migrate
 from datetime import datetime, UTC
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
+import json
 
 load_dotenv()
 
@@ -17,6 +18,9 @@ load_dotenv()
 SECRET_KEY = os.getenv("SECRET_KEY")
 RECAPTCHA_PUBLIC_KEY = os.getenv("RECAPTCHA_PUBLIC_KEY")
 RECAPTCHA_PRIVATE_KEY = os.getenv("RECAPTCHA_PRIVATE_KEY")
+ADMINS = os.getenv("ADMINS")
+
+admins = json.loads(ADMINS)
 
 #Setup Variables
 app = Flask(__name__)
@@ -28,6 +32,7 @@ app.config['TRAP_HTTP_EXCEPTIONS']=True
 app.config["DEBUG"] = False
 app.config["RECAPTCHA_PUBLIC_KEY"] = RECAPTCHA_PUBLIC_KEY
 app.config["RECAPTCHA_PRIVATE_KEY"] = RECAPTCHA_PRIVATE_KEY
+app.url_map.strict_slashes = False
 
 #Initialize Database
 db = SQLAlchemy(app)
@@ -198,6 +203,45 @@ def handle_error(e):
         raise e
     except:
         return render_template('error_codes/generic_error.html', pageName=e.code, errorTitle="Error", errorExplain="An Error Occurred"), e.code
+
+#Admin Pages
+@app.route("/admin")
+@login_required
+def admin():
+    for admin in admins["admins"]:
+        if current_user.email == admin:
+            return(render_template("admin/admin_dashboard.html"))
+    else:
+        abort(401)
+
+@app.route("/admin/<page>")
+@login_required
+def admin_pages(page):
+    page = str.lower(page)
+    for admin in admins["admins"]:
+        if current_user.email == admin:
+            if page == "users":
+                registeredUsers = Users.query.order_by(Users.date_added)
+                return(render_template("admin/admin_dashboard_userlist.html", registeredUsers=registeredUsers))
+    else:
+        abort(401)
+
+@app.route("/admin/users/delete/<id>")
+@login_required
+def admin_delete_user(id):
+    for admin in admins["admins"]:
+        if current_user.email == admin:
+            try:
+                user = Users.query.filter_by(id=id).first()
+                db.session.delete(user)
+                db.session.commit()
+                flash(f"User {id} Deleted")
+                return(redirect(url_for('admin_pages', page='users')))
+            except:
+                flash("<strong>An error occurred!</stong> Plese try again")
+                return(redirect(url_for('admin_pages', page='users')))
+    else:
+        abort(401)
 
 #Functions to run the server
 def run():
