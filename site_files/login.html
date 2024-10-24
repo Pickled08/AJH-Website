@@ -6,7 +6,7 @@
     <body>
         {% include "elements/navbar.html" %}
 
-        {% if username %}
+        {% if email %}
             <h>Logging you in...</h>
         {% else %}
             <h>Login</h>
@@ -14,11 +14,11 @@
             <form method="post">
                 {{form.hidden_tag()}}
 
-                {{form.username.lable}}
-                {{form.username()}}
+                <p>Email</p>
+                {{form.email()}}
                 <br>
-                {{form.password.lable}}
-                {{form.password()}}
+                <p>Password</p>
+                {{form.password_hash()}}
                 <br>
                 {{form.submit()}}
             </form>

@@ -6,6 +6,38 @@
     <body>
         {% include "elements/navbar.html" %}
 
+        {% if email %}
+            <head>
+                <meta http-equiv="refresh" content="0;url={{ url_for('login')}}" />
+            </head>
+        {% else %}
+            <h>Register</h>
+            {% if exists %}
+            <h>Account already exists</h>
+            {% endif %}
+            <br>
+            <form method="post">
+                {{form.hidden_tag()}}
+                <p>Name</p>
+                {{form.name()}}
+                <br>
+                <p>Email</p>
+                {{form.email()}}
+                <br>
+                <p>Password</p>
+                {{form.password_hash()}}
+                <br>
+                <p>Confirm Password</p>
+                {{form.password_hash2()}}
+                {{form.submit()}}
+            </form>
+        {% endif %}
+
+        <br>
+        <br>
+        {% for our_user in our_users %}
+            {{ our_user.id}} - {{ our_user.name }} - {{ our_user.email }} - {{our_user.password_hash}}
+        {% endfor %}
     </body>
 
     <footer>{% include "elements/footer.html" %}</footer>
