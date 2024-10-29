@@ -24,9 +24,10 @@ RECAPTCHA_PUBLIC_KEY = os.getenv("RECAPTCHA_PUBLIC_KEY")
 RECAPTCHA_PRIVATE_KEY = os.getenv("RECAPTCHA_PRIVATE_KEY")
 ADMINS = os.getenv("ADMINS")
 
+#Load Json from env variables
 admins = json.loads(ADMINS)
 
-#Setup Variables
+#Setup
 app = Flask(__name__)
 app = Flask(__name__, template_folder="site_files")
 app.config["TEMPLATES_AUTO_RELOAD"] = True
@@ -42,7 +43,7 @@ app.url_map.strict_slashes = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-#Create Models
+#User DB Model
 class Users(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(32), nullable=False)
@@ -65,7 +66,8 @@ class Users(db.Model, UserMixin):
     #Create A String
     def __repr__(self):
         return "<name %r>" % self.name
-    
+
+#Blog DB Model 
 class Blogs(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255))
@@ -102,13 +104,15 @@ def projects():
 #Blog Page
 @app.route("/blog")
 def blog():
+    #Gets all blogs and orders them by date posted
     blogs = Blogs.query.order_by(Blogs.date_posted)
-    print(blogs)
     return(render_template("blog.html",pageName="Blog", blogs=blogs))
 
 @app.route("/blog/<slug>")
 def blog_read(slug):
+    #Finds blog by its slug
     blog = Blogs.query.filter_by(slug=slug).first()
+    #404 if no blog found
     if blog is None:
         abort(404)
     else:
@@ -119,19 +123,25 @@ def blog_read(slug):
 def blog_post():
     title = None
     body = None
+
     form = BlogForm()
+
+    #Validate Form
     if form.validate_on_submit():
 
         #Vars
         title = form.title.data
         body = form.body.data
         author = current_user.id
+        #      Replaces and non allowed charaters
+        #      |                  Replaces spaces with underscores
+        #      |                  |                  Puts title in lowercase
+        #      |                  |                  |                          Adds a UUID to the end to avoid dupicate urls
         slug = re.sub(r"\W+", "", re.sub(r"\s", "_", str.lower(title))) + "-" + str(uuid.uuid4())
 
         blog = Blogs(title=title, body=body, slug=slug, author=author)
 
-        print(blog)
-
+        #Committs to DB
         db.session.add(blog)
         db.session.commit()
         flash("Posted Blog")
@@ -157,17 +167,25 @@ def fun():
 @login_required
 def fun_tts():
     input = None
+
     form = TTSForm()
+
+    #Validate Form
     if form.validate_on_submit():
         input = form.input.data
         print(f"TTS: {input}")
+
+        #Generate audio using google TTS
         tts = gTTS(input)
         tts.save("audio/output.mp3")
+
+        #Load and Play audio
         p = vlc.MediaPlayer("audio/output.mp3")
         p.play()
 
-
+    #clear Form
     form.input.data = ""
+
     return(render_template("fun_tts.html", pageName="Fun", input=input, form=form))
 
 #Github Link
@@ -190,6 +208,7 @@ def privacy_policy():
 def cookie_policy():
     abort(404)
 
+#Account Page
 @app.route("/account")
 def account():
     abort(404)
@@ -201,6 +220,7 @@ def register():
     email = None
     password_hash = None
     form = RegisterForm()
+
     #Validate Form
     if form.validate_on_submit():
         email = str.lower(form.email.data)
@@ -214,13 +234,17 @@ def register():
             flash("Account Registerd")
         else:
             return render_template("register.html", pageName="Register",exists=True, form=form)
+        
         name = form.name.data
         email = str.lower(form.email.data)
+
         #Clear Form
         form.name.data = ""
         form.email.data = ""
         form.password_hash.data = ""
         form.password_hash2.data = ""
+        
+        #Redirect to homepage after submiting
         return redirect(url_for("index"))
     return render_template("register.html", pageName="Register", name=name, email=email, form=form)
 
@@ -232,6 +256,7 @@ def login():
     passed = None
 
     form = LoginForm()
+
     #Validate Form
     if form.validate_on_submit():
         email = str.lower(form.email.data)
@@ -245,8 +270,11 @@ def login():
 
         if user:
             if check_password_hash(user.password_hash, password):
+                #Login User
                 login_user(user, remember=True)
                 flash("Logged In")
+
+                #Redirect to homepage after logging in
                 return redirect(url_for("index"))
             else:
                 flash("Worng Email or Password")
@@ -255,11 +283,14 @@ def login():
 
     return render_template("login.html", pageName="Login", form=form, email=email, passed=passed)
 
+#Logout
 @app.route("/logout", methods=["GET", "POST"])
 @login_required
 def logout():
+    #Logs out user
     logout_user()
     flash("Logged Out Succefully")
+
     return redirect(url_for("login"))
     
 
@@ -267,49 +298,68 @@ def logout():
 @app.errorhandler(Exception)
 def handle_error(e):
     try:
+        #Error Page 401
         if e.code == 401:
             return render_template('error_codes/401.html', pageName="401"), 401
+        
+        #Error Page 404
         elif e.code == 404:
             return render_template('error_codes/404.html', pageName="404"), 404
+        
+        #Error Page 500
         elif e.code == 500:
             return render_template('error_codes/generic_error.html', pageName="500", errorTitle="Internal Server Error", errorExplain="The server has run into an error trying to load this page"), 500
         raise e
+    
+    #Any other Error
     except:
         return render_template('error_codes/generic_error.html', pageName=e.code, errorTitle="Error", errorExplain="An Error Occurred"), e.code
 
-#Admin Pages
+#Admin Page
 @app.route("/admin")
 @login_required
 def admin():
+    #Check if current user is in admin list
     for admin in admins["admins"]:
         if current_user.email == admin:
             return(render_template("admin/admin_dashboard.html"))
     else:
         abort(401)
 
+#Admin Pages
 @app.route("/admin/<page>")
 @login_required
 def admin_pages(page):
+    #Lowercase to avoid accidently caps
     page = str.lower(page)
+
+    #Check if current user is in admin list
     for admin in admins["admins"]:
         if current_user.email == admin:
+            #User management page
             if page == "users":
+                #Get all users and order by date added
                 registeredUsers = Users.query.order_by(Users.date_added)
                 return(render_template("admin/admin_dashboard_userlist.html", registeredUsers=registeredUsers))
     else:
         abort(401)
 
+#Delete user
 @app.route("/admin/users/delete/<id>")
 @login_required
 def admin_delete_user(id):
+    #Check if current user is in admin list
     for admin in admins["admins"]:
         if current_user.email == admin:
             try:
+                #Lookup and Delete user
                 user = Users.query.filter_by(id=id).first()
                 db.session.delete(user)
                 db.session.commit()
                 flash(f"User {id} Deleted")
                 return(redirect(url_for('admin_pages', page='users')))
+            
+            #Error if someing goes wrong
             except:
                 flash("<strong>An error occurred!</stong> Plese try again")
                 return(redirect(url_for('admin_pages', page='users')))
@@ -318,8 +368,10 @@ def admin_delete_user(id):
 
 #Functions to run the server
 def run():
+  #App Run parameters
   app.run(host='0.0.0.0',port=8080)
   
+#Start using threading
 def start():
     t = Thread(target=run)
     t.start()
