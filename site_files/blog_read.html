@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+    <head>{% include "elements/head.html" %}</head>
+
+    {% include "elements/navbar.html" %}
+
+    <body>
+
+        <h>{{blog.title}}</h>
+
+        <p>{{blog.body|safe}}</p>
+
+        <footer>{% include "elements/footer.html" %}</footer>
+
+    </body>
+</html>

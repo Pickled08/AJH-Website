@@ -27,7 +27,7 @@
     {% elif pageName == 'Fun' %}
     {% else %}
     <li>
-        <a class="active" href="{{ url_for(request.endpoint) }}"> {{ pageName }} </a>
+        <a class="active" href="{{ request.url }}"> {{ pageName }} </a>
     </li>
     {% endif %}
     {% if current_user.is_authenticated %}

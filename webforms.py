@@ -2,6 +2,8 @@
 from flask_wtf import FlaskForm, RecaptchaField
 from wtforms import StringField, SubmitField, PasswordField, BooleanField, ValidationError
 from wtforms.validators import DataRequired, Email, EqualTo, Length
+from wtforms.widgets import TextArea
+from wtforms_validators import AlphaNumeric
 
 #Login Form Class
 class LoginForm(FlaskForm):
@@ -17,6 +19,11 @@ class RegisterForm(FlaskForm):
     password_hash2 =PasswordField("Confirm Password", validators=[DataRequired()])
     #recaptcha = RecaptchaField()
     submit = SubmitField("Register")
+
+class BlogForm(FlaskForm):
+    title = StringField("Title", validators=[DataRequired()])
+    body = StringField("Body", widget=TextArea())
+    submit = SubmitField("Post")
 
 class TTSForm(FlaskForm):
     input = StringField("Input", validators=[DataRequired(), Length(max=20)])

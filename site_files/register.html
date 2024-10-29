@@ -6,7 +6,10 @@
     {% include "elements/navbar.html" %}
 
     <body>
-
+        
+        {% if current_user.is_authenticated %}
+        <meta http-equiv="refresh" content="0;url={{ url_for('index')}}" />
+        {% endif %}
         {% if email %}
             <head>
                 <meta http-equiv="refresh" content="0;url={{ url_for('login')}}" />

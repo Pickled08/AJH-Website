@@ -4,7 +4,7 @@ from threading import Thread
 from flask import render_template, abort, redirect, url_for, flash
 import os
 from dotenv import load_dotenv
-from webforms import LoginForm, RegisterForm, TTSForm
+from webforms import LoginForm, RegisterForm, TTSForm, BlogForm
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import datetime, UTC
@@ -13,6 +13,8 @@ from flask_login import UserMixin, login_user, LoginManager, login_required, log
 import json
 from gtts import gTTS
 import vlc
+import re
+import uuid
 
 load_dotenv()
 
@@ -40,7 +42,7 @@ app.url_map.strict_slashes = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-#Create Model
+#Create Models
 class Users(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(32), nullable=False)
@@ -63,6 +65,14 @@ class Users(db.Model, UserMixin):
     #Create A String
     def __repr__(self):
         return "<name %r>" % self.name
+    
+class Blogs(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255))
+    body = db.Column(db.Text)
+    slug = db.Column(db.String(255))
+    author = db.Column(db.String(255))
+    date_posted = db.Column(db.DateTime, default=datetime.now(UTC))
 
 #Flask Login
 login_manager = LoginManager()
@@ -92,7 +102,46 @@ def projects():
 #Blog Page
 @app.route("/blog")
 def blog():
-    abort(404)
+    blogs = Blogs.query.order_by(Blogs.date_posted)
+    print(blogs)
+    return(render_template("blog.html",pageName="Blog", blogs=blogs))
+
+@app.route("/blog/<slug>")
+def blog_read(slug):
+    blog = Blogs.query.filter_by(slug=slug).first()
+    if blog is None:
+        abort(404)
+    else:
+        return(render_template("blog_read.html", pageName="Blog", blog=blog))
+
+@app.route("/blog/post", methods=["GET", "POST"])
+@login_required
+def blog_post():
+    title = None
+    body = None
+    form = BlogForm()
+    if form.validate_on_submit():
+
+        #Vars
+        title = form.title.data
+        body = form.body.data
+        author = current_user.id
+        slug = re.sub(r"\W+", "", re.sub(r"\s", "_", str.lower(title))) + "-" + str(uuid.uuid4())
+
+        blog = Blogs(title=title, body=body, slug=slug, author=author)
+
+        print(blog)
+
+        db.session.add(blog)
+        db.session.commit()
+        flash("Posted Blog")
+
+        #Clear Form
+        form.title.data = ""
+        form.body.data = ""
+
+    return(render_template("blog_post.html", pageName="Blog", form=form))
+        
 
 #Contact Page
 @app.route("/contact")
@@ -105,6 +154,7 @@ def fun():
     return(render_template("fun.html", pageName="Fun"))
 
 @app.route("/fun/tts", methods=["GET", "POST"])
+@login_required
 def fun_tts():
     input = None
     form = TTSForm()

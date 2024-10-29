@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+    <head>{% include "elements/head.html" %}</head>
+
+    {% include "elements/navbar.html" %}
+
+    <body>
+
+        {% for blog in blogs %}
+        <a href="/blog/{{ blog.slug }}">{{ blog.title }}</a>
+        {% endfor %}
+
+        <footer>{% include "elements/footer.html" %}</footer>
+
+    </body>
+</html>
