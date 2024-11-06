@@ -7,10 +7,11 @@
     <body>
         <div class="blog">
             <br>
-            <h>{{blog.title}}</h>
-            <h></h>
+            <h class="bold">{{ blog.title }}</h><br>
+            <h class="small-text">by {{ author }}</h><br>
+            <h class="small-text">{{ date_posted }}</h>
 
-            <p>{{blog.body|safe}}</p>
+            <p>{{ blog.body|safe }}</p>
         </div>
 
         <div>

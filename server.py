@@ -33,7 +33,7 @@ app = Flask(__name__)
 app = Flask(__name__, template_folder="site_files")
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.config["SECRET_KEY"] = SECRET_KEY
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///users.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///data.db"
 app.config['TRAP_HTTP_EXCEPTIONS']=True
 app.config["DEBUG"] = False
 app.config["RECAPTCHA_PUBLIC_KEY"] = RECAPTCHA_PUBLIC_KEY
@@ -126,6 +126,9 @@ def blog_read(slug):
     if blog is None:
         abort(404)
     else:
+
+        author = (Users.query.filter_by(id=blog.author).first()).name
+
         if current_user:
             #Comment Post
             body = None
@@ -174,8 +177,44 @@ def blog_read(slug):
             #Add to main list
             comments_full.append(data)
 
+        #Send Formated Date posted
+        date_posted = str(blog.date_posted)
+        date_posted = date_posted.split(".", 1)[0]
 
-        return(render_template("blog_read.html", pageName="Blog", blog=blog, form=form, comments=comments_full))
+        return(render_template("blog_read.html", pageName="Blog", blog=blog, form=form,author=author , comments=comments_full, date_posted=date_posted))
+
+#Deletes Blog post
+@app.route("/blog/delete/<id>")
+@login_required
+def delete_blog(id):
+    #Search for blog
+    blog = Blogs.query.filter_by(id=id).first()
+
+    #Check if blog exists
+    if blog == None:
+        flash("<strong>An error occurred!</stong> Plese try again")
+        return(redirect(url_for("blog")))
+    else:
+        #Get comments associated with blog post
+        comments = Comments.query.filter_by(post_id=id) 
+
+        #Check if user is author
+        if int(current_user.id) == int(blog.author):
+            #Delete blog post
+            db.session.delete(blog)
+            db.session.commit()
+
+            #Delete comments associated with blog post
+            for comment in comments:
+                db.session.delete(comment)
+                db.session.commit()
+
+            flash(f"Blog {blog.title} deleted!")
+            return(redirect(url_for("blog")))
+        else:
+            abort(401)
+    
+    
 
 @app.route("/blog/post", methods=["GET", "POST"])
 @login_required
@@ -411,10 +450,22 @@ def admin_delete_user(id):
     for admin in admins["admins"]:
         if current_user.email == admin:
             try:
-                #Lookup and Delete user
+                #Lookup and Delete user and other data related to user
                 user = Users.query.filter_by(id=id).first()
+                comments = Comments.query.filter_by(user_id=id)
+                blogs = Blogs.query.filter_by(author=id)
+
+                for comment in comments:
+                    db.session.delete(comment)
+                    db.session.commit()
+
+                for blog in blogs:
+                    db.session.delete(blog)
+                    db.session.commit()
+
                 db.session.delete(user)
                 db.session.commit()
+
                 flash(f"User {id} Deleted")
                 return(redirect(url_for("admin_pages", page="users")))
             

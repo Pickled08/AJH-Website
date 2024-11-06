@@ -202,3 +202,7 @@ button {
 .blog {
     background-color: #1C2321;
 }
+
+.bold {
+    font-weight: bold;
+}

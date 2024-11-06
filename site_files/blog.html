@@ -7,7 +7,7 @@
     <body>
         <div>
             {% for blog in blogs %}
-            <a href="/blog/{{ blog.slug }}">{{ blog.title }}</a>
+            <p><a href="/blog/{{ blog.slug }}">{{ blog.title }}</a></p>
             <br>
             {% endfor %}
         </div>
