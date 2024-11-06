@@ -4,8 +4,9 @@ from threading import Thread
 from flask import render_template, abort, redirect, url_for, flash
 import os
 from dotenv import load_dotenv
-from webforms import LoginForm, RegisterForm, TTSForm, BlogForm
+from webforms import LoginForm, RegisterForm, TTSForm, BlogForm, CommentForm
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import desc
 from flask_migrate import Migrate
 from datetime import datetime, UTC
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -76,6 +77,15 @@ class Blogs(db.Model):
     author = db.Column(db.String(255))
     date_posted = db.Column(db.DateTime, default=datetime.now(UTC))
 
+#Comments DB Model
+class Comments(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    body = db.Column(db.String(255))
+    post_id = db.Column(db.String(255))
+    user_id = db.Column(db.String(255))
+    date_posted = db.Column(db.DateTime, default=datetime.now(UTC))
+
+
 #Flask Login
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -105,10 +115,10 @@ def projects():
 @app.route("/blog")
 def blog():
     #Gets all blogs and orders them by date posted
-    blogs = Blogs.query.order_by(Blogs.date_posted)
+    blogs = Blogs.query.order_by(Blogs.date_posted.desc())
     return(render_template("blog.html",pageName="Blog", blogs=blogs))
 
-@app.route("/blog/<slug>")
+@app.route("/blog/<slug>", methods=["GET", "POST"])
 def blog_read(slug):
     #Finds blog by its slug
     blog = Blogs.query.filter_by(slug=slug).first()
@@ -116,7 +126,56 @@ def blog_read(slug):
     if blog is None:
         abort(404)
     else:
-        return(render_template("blog_read.html", pageName="Blog", blog=blog))
+        if current_user:
+            #Comment Post
+            body = None
+
+            form = CommentForm()
+
+            #Validate Form
+            if form.validate_on_submit():
+
+                #Vars
+                body = form.body.data
+                post_id = blog.id
+                user_id = current_user.id
+
+                comment = Comments(body=body, post_id=post_id, user_id=user_id)
+
+                #Commits to DB
+                db.session.add(comment)
+                db.session.commit()
+                flash("Posted Comment")
+
+                #Clear form
+                form.body.data = ""
+                return(redirect(url_for("blog_read", slug=slug)))
+
+        #Comment load
+        current_post_id = blog.id
+        comments = Comments.query.filter_by(post_id=current_post_id)
+
+        #Format comment data
+        comments_full = []
+        for comment in comments:
+            #Get user who posted comment
+            user = Users.query.filter_by(id=comment.user_id).first()
+
+            #Data
+            body = comment.body
+            author_name = user.name
+            #Format date posted
+            datePosted = str(comment.date_posted)
+            datePosted = datePosted.split(".", 1)[0]
+            print(datePosted)
+
+            #Package into list
+            data = [body, author_name, datePosted]
+            #Add to main list
+            comments_full.append(data)
+
+
+        return(render_template("blog_read.html", pageName="Blog", blog=blog, form=form, comments=comments_full))
 
 @app.route("/blog/post", methods=["GET", "POST"])
 @login_required
@@ -357,12 +416,12 @@ def admin_delete_user(id):
                 db.session.delete(user)
                 db.session.commit()
                 flash(f"User {id} Deleted")
-                return(redirect(url_for('admin_pages', page='users')))
+                return(redirect(url_for("admin_pages", page="users")))
             
             #Error if someing goes wrong
             except:
                 flash("<strong>An error occurred!</stong> Plese try again")
-                return(redirect(url_for('admin_pages', page='users')))
+                return(redirect(url_for("admin_pages", page="users")))
     else:
         abort(401)
 

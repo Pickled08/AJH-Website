@@ -5,10 +5,39 @@
     {% include "elements/navbar.html" %}
 
     <body>
+        <div class="blog">
+            <br>
+            <h>{{blog.title}}</h>
+            <h></h>
 
-        <h>{{blog.title}}</h>
+            <p>{{blog.body|safe}}</p>
+        </div>
 
-        <p>{{blog.body|safe}}</p>
+        <div>
+            {% if current_user.is_authenticated %}
+            <form method="post" >
+                {{form.hidden_tag()}}
+
+                <p>Post a comment</p>
+                <br>
+                {{form.body()}}
+                {{form.submit(class="button")}}
+                <br>
+                <br>
+            </form>
+        </div>
+        <div>
+            {% endif %}
+
+            {% for comment in comments %}
+            <div class="comment">
+                <p class="xx-small-text comment-text">{{ comment[1] }}</p>
+                <p class="comment-text">{{ comment[0] }}</p>
+                <p class="xx-small-text comment-text">{{ comment[2] }}</p>
+            </div>
+            {% endfor %}
+
+        </div>
 
         <footer>{% include "elements/footer.html" %}</footer>
 

@@ -189,3 +189,16 @@ button {
 .title {
     font-size: 100px;
 }
+
+.comment {
+    background-color: #313F44;
+    padding: 0%;
+}
+
+.comment-text {
+    padding: 10px;
+}
+
+.blog {
+    background-color: #1C2321;
+}

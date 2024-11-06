@@ -5,11 +5,12 @@
     {% include "elements/navbar.html" %}
 
     <body>
-
-        {% for blog in blogs %}
-        <a href="/blog/{{ blog.slug }}">{{ blog.title }}</a>
-        {% endfor %}
-
+        <div>
+            {% for blog in blogs %}
+            <a href="/blog/{{ blog.slug }}">{{ blog.title }}</a>
+            <br>
+            {% endfor %}
+        </div>
         <footer>{% include "elements/footer.html" %}</footer>
 
     </body>
