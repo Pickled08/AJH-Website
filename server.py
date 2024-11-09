@@ -104,12 +104,12 @@ def index():
 #About Page
 @app.route("/about")
 def about():
-    abort(404)
+    return(render_template("about.html", pageName="About"))
 
 #Projects Page
 @app.route("/projects")
 def projects():
-    abort(404)
+    return(render_template("projects.html", pageName="Projects"))
 
 #Blog Page
 @app.route("/blog")
@@ -253,8 +253,9 @@ def blog_post():
 
 #Contact Page
 @app.route("/contact")
+@login_required
 def contact():
-    abort(404)
+    return(render_template("contact.html", pageName="Contact"))
 
 #Fun Stuff
 @app.route("/fun")

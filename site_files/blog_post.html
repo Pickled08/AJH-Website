@@ -14,10 +14,10 @@
                         {{form.hidden_tag()}}
 
                         <p>Title</p>
-                        {{form.title()}}
+                        {{form.title(size="100")}}
                         <br>
                         <p>Body</p>
-                         {{form.body(rows="5")}}
+                         {{form.body(rows="20", cols="100", class="textarea")}}
                         <br>
                         <br>
                         {{form.submit(class="button")}}

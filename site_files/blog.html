@@ -6,6 +6,7 @@
 
     <body>
         <div>
+            <div class="post-blog"><a class="button" href="{{ url_for('blog_post') }}">Post</a><br></div>
             {% for blog in blogs %}
             <p><a href="/blog/{{ blog.slug }}">{{ blog.title }}</a></p>
             <br>

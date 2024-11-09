@@ -206,3 +206,11 @@ button {
 .bold {
     font-weight: bold;
 }
+
+.post-blog {
+    padding: 14px;
+}
+
+.textarea {
+    resize: none;
+  }
