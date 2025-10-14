@@ -15,7 +15,8 @@
 
 
     <body>
-        <a href="{{url_for('admin_pages', page='users')}}">User List</a>
+        <h>Welcome {{current_user.name}}, to the Admin dashboard</h><br><br>
+        <a href="{{url_for('admin_pages', page='users')}}">User List</a><a style="float: right;" href="{{url_for('index')}}">Home</a>
     </body>
 
 </html>

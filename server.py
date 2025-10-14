@@ -1,19 +1,17 @@
 #Imports
 from flask import Flask
 from threading import Thread
-from flask import render_template, abort, redirect, url_for, flash
+from flask import render_template, abort, redirect, url_for, flash, request
 import os
 from dotenv import load_dotenv
 from webforms import LoginForm, RegisterForm, TTSForm, BlogForm, CommentForm
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import desc
+from sqlalchemy import desc, or_
 from flask_migrate import Migrate
 from datetime import datetime, UTC
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
 import json
-from gtts import gTTS
-import vlc
 import re
 import uuid
 
@@ -24,6 +22,13 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 RECAPTCHA_PUBLIC_KEY = os.getenv("RECAPTCHA_PUBLIC_KEY")
 RECAPTCHA_PRIVATE_KEY = os.getenv("RECAPTCHA_PRIVATE_KEY")
 ADMINS = os.getenv("ADMINS")
+ADMIN_ONLY_POSTING = os.getenv("ADMIN_ONLY_POSTING")
+
+#Admin Tools------------------
+
+#Admin Only Posting
+admin_only_posting = ADMIN_ONLY_POSTING
+#-----------------------------
 
 #Load Json from env variables
 admins = json.loads(ADMINS)
@@ -112,11 +117,74 @@ def projects():
     return(render_template("projects.html", pageName="Projects"))
 
 #Blog Page
+from sqlalchemy import or_, func
+import re
+
 @app.route("/blog")
 def blog():
-    #Gets all blogs and orders them by date posted
-    blogs = Blogs.query.order_by(Blogs.date_posted.desc())
-    return(render_template("blog.html",pageName="Blog", blogs=blogs))
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+    search_query = request.args.get('search', '', type=str)
+
+    query = Blogs.query
+
+    if search_query:
+        if search_query.startswith("USER:"):
+            # Extract username
+            search_query_name = search_query[len("USER:"):].strip()
+            
+            # Find user(s) matching that name
+            user_list = Users.query.filter(Users.name.ilike(f"%{search_query_name}%")).order_by(Users.date_added).all()
+            user_ids = [user.id for user in user_list]
+
+            if user_ids:
+                # Filter blogs by these author IDs only
+                query = query.filter(Blogs.author.in_(user_ids))
+            else:
+                flash("No results for that user, make sure you typed it in correctly")
+                # Fallback to searching title/body using the entered text
+                query = query.filter(
+                    or_(
+                        Blogs.title.ilike(f"%{search_query_name}%"),
+                        Blogs.body.ilike(f"%{search_query_name}%")
+                    )
+                )
+        elif search_query.startswith("EXACTUSER:"):
+                    # Extract username
+            search_query_name = search_query[len("EXACTUSER:"):].strip()
+            
+            # Find user(s) matching that name
+            user_list = Users.query.filter(Users.name == search_query_name).order_by(Users.date_added).all()
+            user_ids = [user.id for user in user_list]
+
+            if user_ids:
+                # Filter blogs by these author IDs only
+                query = query.filter(Blogs.author.in_(user_ids))
+            else:
+                flash("No results for that user, make sure you typed it in correctly")
+                # Fallback to searching title/body using the entered text
+                query = query.filter(
+                    or_(
+                        Blogs.title.ilike(f"%{search_query_name}%"),
+                        Blogs.body.ilike(f"%{search_query_name}%")
+                    )
+                )
+        else:
+            # General search in title/body
+            query = query.filter(
+                or_(
+                    Blogs.title.ilike(f"%{search_query}%"),
+                    Blogs.body.ilike(f"%{search_query}%")
+                )
+            )
+
+    pagination = query.order_by(Blogs.date_posted.desc()).paginate(page=page, per_page=per_page, error_out=False)
+    blogs = pagination.items
+
+    return render_template("blog.html", pageName="Blog", blogs=blogs, search_query=search_query, pagination=pagination)
+
+
+
 
 @app.route("/blog/<slug>", methods=["GET", "POST"])
 def blog_read(slug):
@@ -127,7 +195,9 @@ def blog_read(slug):
         abort(404)
     else:
 
-        author = (Users.query.filter_by(id=blog.author).first()).name
+        author_info = (Users.query.filter_by(id=blog.author).first())
+        author = author_info.name
+        author_id = int(author_info.id)
 
         if current_user:
             #Comment Post
@@ -137,26 +207,47 @@ def blog_read(slug):
 
             #Validate Form
             if form.validate_on_submit():
+                if admin_only_posting:
+                        #Check if current user is in admin list
+                    for admin in admins["admins"]:
+                        if current_user.email == admin:
+                            #Vars
+                            body = form.body.data
+                            post_id = blog.id
+                            user_id = current_user.id
 
-                #Vars
-                body = form.body.data
-                post_id = blog.id
-                user_id = current_user.id
+                            comment = Comments(body=body, post_id=post_id, user_id=user_id)
 
-                comment = Comments(body=body, post_id=post_id, user_id=user_id)
+                            #Commits to DB
+                            db.session.add(comment)
+                            db.session.commit()
+                            flash("Posted Comment - Note: Admin Only Posting is set to true")
 
-                #Commits to DB
-                db.session.add(comment)
-                db.session.commit()
-                flash("Posted Comment")
+                            #Clear form
+                            form.body.data = ""
+                            return(redirect(url_for("blog_read", slug=slug)))
+                        else:
+                            flash("Your Comment could not be posted you are not an admin")
+                else:
+                    #Vars
+                    body = form.body.data
+                    post_id = blog.id
+                    user_id = current_user.id
 
-                #Clear form
-                form.body.data = ""
-                return(redirect(url_for("blog_read", slug=slug)))
+                    comment = Comments(body=body, post_id=post_id, user_id=user_id)
+
+                    #Commits to DB
+                    db.session.add(comment)
+                    db.session.commit()
+                    flash("Posted Comment")
+
+                    #Clear form
+                    form.body.data = ""
+                    return(redirect(url_for("blog_read", slug=slug)))
 
         #Comment load
         current_post_id = blog.id
-        comments = Comments.query.filter_by(post_id=current_post_id)
+        comments = Comments.query.filter_by(post_id=current_post_id).limit(50)
 
         #Format comment data
         comments_full = []
@@ -181,38 +272,45 @@ def blog_read(slug):
         date_posted = str(blog.date_posted)
         date_posted = date_posted.split(".", 1)[0]
 
-        return(render_template("blog_read.html", pageName="Blog", blog=blog, form=form,author=author , comments=comments_full, date_posted=date_posted))
+        return(render_template("blog_read.html", pageName="Blog", blog=blog, form=form,author=author,author_id=author_id, comments=comments_full, date_posted=date_posted))
 
 #Deletes Blog post
-@app.route("/blog/delete/<id>")
+@app.route("/blog/delete/<id>", methods=['GET', 'POST'])
 @login_required
 def delete_blog(id):
     #Search for blog
     blog = Blogs.query.filter_by(id=id).first()
 
-    #Check if blog exists
-    if blog == None:
-        flash("<strong>An error occurred!</stong> Plese try again")
-        return(redirect(url_for("blog")))
-    else:
-        #Get comments associated with blog post
-        comments = Comments.query.filter_by(post_id=id) 
+    #Ask user if they want to delete the post
+    if request.method == 'POST':
+        user_choice = request.form.get('choice')
+        if user_choice == 'yes':
+            #Check if blog exists
+            if blog == None:
+                flash("<strong>An error occurred!</stong> Plese try again")
+                return(redirect(url_for("blog")))
+            else:
+                #Get comments associated with blog post
+                comments = Comments.query.filter_by(post_id=id) 
 
-        #Check if user is author
-        if int(current_user.id) == int(blog.author):
-            #Delete blog post
-            db.session.delete(blog)
-            db.session.commit()
+                #Check if user is author
+                if int(current_user.id) == int(blog.author):
+                    #Delete blog post
+                    db.session.delete(blog)
+                    db.session.commit()
 
-            #Delete comments associated with blog post
-            for comment in comments:
-                db.session.delete(comment)
-                db.session.commit()
+                    #Delete comments associated with blog post
+                    for comment in comments:
+                        db.session.delete(comment)
+                        db.session.commit()
 
-            flash(f"Blog {blog.title} deleted!")
-            return(redirect(url_for("blog")))
+                    flash(f"Blog {blog.title} deleted!")
+                    return(redirect(url_for("blog")))
+                else:
+                    abort(401)
         else:
-            abort(401)
+            return(redirect(url_for("blog_read",slug=blog.slug)))
+    return render_template("confirm.html", pageName="Confirm")
     
     
 
@@ -226,27 +324,49 @@ def blog_post():
 
     #Validate Form
     if form.validate_on_submit():
+        if admin_only_posting:
+            #Check if current user is in admin list
+            for admin in admins["admins"]:
+                if current_user.email == admin:
+                    #Vars
+                    body = form.body.data
+                    post_id = blog.id
+                    user_id = current_user.id
 
-        #Vars
-        title = form.title.data
-        body = form.body.data
-        author = current_user.id
-        #      Replaces and non allowed charaters
-        #      |                  Replaces spaces with underscores
-        #      |                  |                  Puts title in lowercase
-        #      |                  |                  |                          Adds a UUID to the end to avoid dupicate urls
-        slug = re.sub(r"\W+", "", re.sub(r"\s", "_", str.lower(title))) + "-" + str(uuid.uuid4())
+                    comment = Comments(body=body, post_id=post_id, user_id=user_id)
 
-        blog = Blogs(title=title, body=body, slug=slug, author=author)
+                    #Commits to DB
+                    db.session.add(comment)
+                    db.session.commit()
+                    flash("Posted Post - Note: Admin Only Posting is set to true")
 
-        #Committs to DB
-        db.session.add(blog)
-        db.session.commit()
-        flash("Posted Blog")
+                    #Clear form
+                    form.body.data = ""
+                    return(redirect(url_for("blog_read", slug=slug)))
+                else:
+                    flash("Your Post could not be posted you are not an admin")
+        else:
+            #Vars
+            title = form.title.data
+            body = form.body.data
+            author = current_user.id
+            #      Replaces all non allowed charaters
+            #      |                  Replaces spaces with underscores
+            #      |                  |                  Puts title in lowercase
+            #      |                  |                  |                          Adds a UUID to the end to avoid dupicate urls
+            slug = re.sub(r"\W+", "", re.sub(r"\s", "_", str.lower(title))) + "-" + str(uuid.uuid4())
 
-        #Clear Form
-        form.title.data = ""
-        form.body.data = ""
+            blog = Blogs(title=title, body=body, slug=slug, author=author)
+
+            #Committs to DB
+            db.session.add(blog)
+            db.session.commit()
+            flash("Posted Blog")
+
+            #Clear Form
+            form.title.data = ""
+            form.body.data = ""
+            return(redirect(url_for("blog_read", slug=slug)))
 
     return(render_template("blog_post.html", pageName="Blog", form=form))
         
@@ -256,36 +376,6 @@ def blog_post():
 @login_required
 def contact():
     return(render_template("contact.html", pageName="Contact"))
-
-#Fun Stuff
-@app.route("/fun")
-def fun():
-    return(render_template("fun.html", pageName="Fun"))
-
-@app.route("/fun/tts", methods=["GET", "POST"])
-@login_required
-def fun_tts():
-    input = None
-
-    form = TTSForm()
-
-    #Validate Form
-    if form.validate_on_submit():
-        input = form.input.data
-        print(f"TTS: {input}")
-
-        #Generate audio using google TTS
-        tts = gTTS(input)
-        tts.save("audio/output.mp3")
-
-        #Load and Play audio
-        p = vlc.MediaPlayer("audio/output.mp3")
-        p.play()
-
-    #clear Form
-    form.input.data = ""
-
-    return(render_template("fun_tts.html", pageName="Fun", input=input, form=form))
 
 #Github Link
 @app.route("/github")
@@ -305,11 +395,6 @@ def privacy_policy():
 #Cookie Policy Page
 @app.route("/policies/cookies")
 def cookie_policy():
-    abort(404)
-
-#Account Page
-@app.route("/account")
-def account():
     abort(404)
 
 #Register Page
@@ -344,7 +429,7 @@ def register():
         form.password_hash2.data = ""
         
         #Redirect to homepage after submiting
-        return redirect(url_for("index"))
+        return redirect(url_for("login"))
     return render_template("register.html", pageName="Register", name=name, email=email, form=form)
 
 #Login Page
@@ -392,6 +477,11 @@ def logout():
 
     return redirect(url_for("login"))
     
+#Account Page
+@app.route("/account")
+@login_required
+def account():
+    return render_template("account.html", pageName="Account")
 
 #Error Pages
 @app.errorhandler(Exception)
@@ -437,38 +527,63 @@ def admin_pages(page):
         if current_user.email == admin:
             #User management page
             if page == "users":
+                #Pagination Vars
+                page = request.args.get('page', 1, type=int)  # default page 1
+                per_page = 20
+
+                search_query = request.args.get('search', '', type=str)
+                # Initialize the query
+                query = Users.query
+
+                # If there's a search term, filter it
+                if search_query:
+                    query = query.filter(or_(Users.name.ilike(f"%{search_query}%"),Users.email.ilike(f"%{search_query}%")))  # Case-insensitive
+
+                #Paginate Results
+                pagination = query.order_by(Users.date_added).paginate(page=page, per_page=per_page, error_out=False)
+                registeredUsers = pagination.items
+
                 #Get all users and order by date added
-                registeredUsers = Users.query.order_by(Users.date_added)
-                return(render_template("admin/admin_dashboard_userlist.html", registeredUsers=registeredUsers))
+                return(render_template("admin/admin_dashboard_userlist.html", registeredUsers=registeredUsers, pagination=pagination, search_query=search_query))
     else:
         abort(401)
 
 #Delete user
-@app.route("/admin/users/delete/<id>")
+@app.route("/admin/users/delete/<id>", methods=["GET", "POST"])
 @login_required
 def admin_delete_user(id):
     #Check if current user is in admin list
     for admin in admins["admins"]:
         if current_user.email == admin:
             try:
-                #Lookup and Delete user and other data related to user
-                user = Users.query.filter_by(id=id).first()
-                comments = Comments.query.filter_by(user_id=id)
-                blogs = Blogs.query.filter_by(author=id)
+                
+                #Ask user if they want to delete user
+                if request.method == 'POST':
+                    user_choice = request.form.get('choice')
+                    if user_choice == 'yes':
 
-                for comment in comments:
-                    db.session.delete(comment)
-                    db.session.commit()
+                        #Lookup and Delete user and other data related to user
+                        user = Users.query.filter_by(id=id).first()
+                        comments = Comments.query.filter_by(user_id=id)
+                        blogs = Blogs.query.filter_by(author=id)
 
-                for blog in blogs:
-                    db.session.delete(blog)
-                    db.session.commit()
+                        for comment in comments:
+                            db.session.delete(comment)
+                            db.session.commit()
 
-                db.session.delete(user)
-                db.session.commit()
+                        for blog in blogs:
+                            db.session.delete(blog)
+                            db.session.commit()
 
-                flash(f"User {id} Deleted")
-                return(redirect(url_for("admin_pages", page="users")))
+                        db.session.delete(user)
+                        db.session.commit()
+
+                        flash(f"User {id} Deleted")
+                        return(redirect(url_for("admin_pages", page="users")))
+                    else:
+                        return(redirect(url_for("admin_pages", page="users")))
+    
+                return render_template("confirm.html", pageName="Confirm")
             
             #Error if someing goes wrong
             except:

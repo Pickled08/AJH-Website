@@ -6,12 +6,34 @@
 
     <body>
         <div>
-            <div class="post-blog"><a class="button" href="{{ url_for('blog_post') }}">Post</a><br></div>
+            <div class="post-blog"><a class="button" href="{{ url_for('blog_post') }}">Post</a></div>
+                    <!-- Search form -->
+            <form method="get" action="{{ request.path }}">
+                <input type="text" name="search" value="{{ search_query }}" placeholder="Search...">
+                <button type="submit">Search</button>
+            </form>
+            {% if search_query %}
+                <h>Results for: {{search_query}}</h>
+            {% endif %}
+
             {% for blog in blogs %}
             <p><a href="/blog/{{ blog.slug }}">{{ blog.title }}</a></p>
             <br>
             {% endfor %}
         </div>
+
+        <div id="pagination">
+            {% if pagination.has_prev %}
+                <a href="{{ request.path }}?page={{ pagination.prev_num }}&search={{ search_query }}">Previous</a>
+            {% endif %}
+        
+            Page {{ pagination.page }} of {{ pagination.pages }}
+        
+            {% if pagination.has_next %}
+                <a href="{{ request.path }}?page={{ pagination.next_num }}&search={{ search_query }}">Next</a>
+            {% endif %}
+        </div>
+
         <footer>{% include "elements/footer.html" %}</footer>
 
     </body>

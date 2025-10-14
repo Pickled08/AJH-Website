@@ -6,7 +6,9 @@
 
     <body>
 
-        
+        <h class="xx-large-text">Hello, {{current_user.name}}</h>
+
+        <a href="{{url_for('blog')}}?search=EXACTUSER%3A{{current_user.name}}">Find all blogs</a>
 
         <footer>{% include "elements/footer.html" %}</footer>
 

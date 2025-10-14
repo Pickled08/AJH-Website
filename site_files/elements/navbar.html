@@ -14,9 +14,6 @@
     <li>
       <a {% if pageName == 'Contact' %} class="active" {% endif %} href="{{ url_for('contact')}}"> Contact </a>
     </li>
-    <li>
-      <a {% if pageName == 'Fun' %} class="active" {% endif %} href="{{ url_for('fun')}}"> Fun </a>
-    </li>
     {% if pageName == 'Home' %}
     {% elif pageName == 'About' %}
     {% elif pageName == 'Projects' %}
@@ -24,7 +21,6 @@
     {% elif pageName == 'Contact' %}
     {% elif pageName == 'Login' %}
     {% elif pageName == 'Account' %}
-    {% elif pageName == 'Fun' %}
     {% else %}
     <li>
         <a class="active" href="{{ request.url }}"> {{ pageName }} </a>
@@ -32,7 +28,7 @@
     {% endif %}
     {% if current_user.is_authenticated %}
     <li class="right-nav">
-      <a {% if pageName == 'Account' %} class="active right-nav" {% endif %} href="{{url_for('account')}}">Account</a>
+      <a {% if pageName == 'Account' %} class="active right-nav" {% endif %} href="{{url_for('account')}}">{{current_user.name}}</a>
     </li>
     {% else %}
     <li class="right-nav">

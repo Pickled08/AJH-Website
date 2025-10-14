@@ -11,9 +11,13 @@
             <h class="small-text">by {{ author }}</h><br>
             <h class="small-text">{{ date_posted }}</h>
 
-            <p>{{ blog.body|safe }}</p>
+            <p>{{ blog.body | safe }}</p>
         </div>
-
+        <div>
+            {% if current_user.id == author_id %}
+            <a class="button" href="{{url_for('delete_blog', id=blog.id )}}">Delete post</a>
+            {% endif %}
+        </div>
         <div>
             {% if current_user.is_authenticated %}
             <form method="post" >
