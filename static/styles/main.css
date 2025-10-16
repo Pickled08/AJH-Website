@@ -32,7 +32,7 @@ body {
     display: grid;
     grid-template-rows: auto 1fr auto;
     color: #EEF1EF;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: OCR A Std, monospace;
     height: 100%;
 }
 html {

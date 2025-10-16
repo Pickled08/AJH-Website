@@ -6,7 +6,9 @@
 
     <body>
         <div>
+            {% if current_user.is_authenticated %}
             <div class="post-blog"><a class="button" href="{{ url_for('blog_post') }}">Post</a></div>
+            {% endif %}
                     <!-- Search form -->
             <form method="get" action="{{ request.path }}">
                 <input type="text" name="search" value="{{ search_query }}" placeholder="Search...">
