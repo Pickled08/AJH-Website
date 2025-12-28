@@ -20,6 +20,8 @@ from flask_wtf import CSRFProtect
 
 load_dotenv()
 
+basedir = os.path.abspath(os.path.dirname(__file__))
+
 #.env variables
 SECRET_KEY = os.getenv("SECRET_KEY")
 RECAPTCHA_PUBLIC_KEY = os.getenv("RECAPTCHA_PUBLIC_KEY")
@@ -40,7 +42,7 @@ def admin_required(f):
 app = Flask(__name__, template_folder="site_files")
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.config["SECRET_KEY"] = SECRET_KEY
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///data.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{os.path.join(basedir, 'instance', 'data.db')}"
 app.config['TRAP_HTTP_EXCEPTIONS']=True
 app.config["DEBUG"] = False
 app.config["RECAPTCHA_PUBLIC_KEY"] = RECAPTCHA_PUBLIC_KEY
