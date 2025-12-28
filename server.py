@@ -17,6 +17,7 @@ from functools import wraps
 from flask import abort
 from flask_login import current_user
 from flask_wtf import CSRFProtect
+from datetime import datetime, timezone
 
 load_dotenv()
 
@@ -89,7 +90,8 @@ class Blogs(db.Model):
     body = db.Column(db.Text)
     slug = db.Column(db.String(255))
     author = db.Column(db.String(255))
-    date_posted = db.Column(db.DateTime, default=datetime.now(UTC))
+    date_posted = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
 
 #Comments DB Model
 class Comments(db.Model):

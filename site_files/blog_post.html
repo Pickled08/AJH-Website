@@ -1,33 +1,45 @@
 <!DOCTYPE html>
-<html>
-    <head>{% include "elements/head.html" %}</head>
+<html lang="en">
+<head>
+    {% include "elements/head.html" %}
+</head>
+
+<body>
 
     {% include "elements/navbar.html" %}
 
-    <body>
-        <div class="center-screen">
-            <div>
-                <h class="title">Post a Blog</h>
-                    <br>
-                    <br>
-                    <form method="post" >
-                        {{form.hidden_tag()}}
+    <main class="center-screen">
 
-                        <p>Title</p>
-                        {{form.title(size="100")}}
-                        <br>
-                        <p>Body</p>
-                         {{form.body(rows="20", cols="100", class="textarea")}}
-                        <br>
-                        <br>
-                        {{form.submit(class="button")}}
-                        <br>
-                        <br>
-                    </form>
-            </div>
+        <div class="post-blog black-shadow-box" style="padding: 28px;">
+
+            <h1 class="title">Post a Blog</h1>
+
+            <form method="post">
+                {{ form.hidden_tag() }}
+
+                <div style="margin-top: 20px;">
+                    <p class="bold">Title</p>
+                    {{ form.title(size="100", class="textarea") }}
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <p class="bold">Body</p>
+                    {{ form.body(rows="20", cols="100", class="textarea") }}
+                </div>
+
+                <div style="margin-top: 28px;">
+                    {{ form.submit(class="button") }}
+                </div>
+
+            </form>
+
         </div>
 
-        <footer>{% include "elements/footer.html" %}</footer>
+    </main>
 
-    </body>
+    <footer>
+        {% include "elements/footer.html" %}
+    </footer>
+
+</body>
 </html>

@@ -1,50 +1,57 @@
 <!DOCTYPE html>
-<html>
-    <head>{% include "elements/head.html" %}</head>
+<html lang="en">
+<head>
+    {% include "elements/head.html" %}
+</head>
+
+<body>
 
     {% include "elements/navbar.html" %}
 
-    <body>
-        <div class="blog">
-            <br>
-            <h class="bold">{{ blog.title }}</h><br>
-            <h class="small-text">by {{ author }}</h><br>
-            <h class="small-text">{{ date_posted }}</h>
+    <main class="post-blog">
 
+        <!-- Blog post -->
+        <div class="blog black-shadow-box" style="padding: 28px; margin: 28px;">
+            <h1 class="bold">{{ blog.title }}</h1>
+            <p class="small-text">by {{ author }} | {{ date_posted }}</p>
+            <hr style="border-color: #313F44; margin: 12px 0;">
             <p>{{ blog.body | safe }}</p>
-        </div>
-        <div>
+
             {% if current_user.id == author_id %}
-            <a class="button" href="{{url_for('delete_blog', id=blog.id )}}">Delete post</a>
+                <a class="button" href="{{ url_for('delete_blog', id=blog.id) }}">Delete post</a>
             {% endif %}
         </div>
-        <div>
-            {% if current_user.is_authenticated %}
-            <form method="post" >
-                {{form.hidden_tag()}}
 
-                <p>Post a comment</p>
-                <br>
-                {{form.body()}}
-                {{form.submit(class="button")}}
-                <br>
-                <br>
+        <!-- Comment form -->
+        {% if current_user.is_authenticated %}
+        <div class="post-blog black-shadow-box" style="padding: 28px; margin: 28px;">
+            <form method="post">
+                {{ form.hidden_tag() }}
+                <p class="bold">Post a comment</p>
+                {{ form.body(class="textarea") }}
+                <div style="margin-top: 14px;">
+                    {{ form.submit(class="button") }}
+                </div>
             </form>
         </div>
-        <div>
-            {% endif %}
+        {% endif %}
 
+        <!-- Comments list -->
+        <section style="margin: 28px;">
             {% for comment in comments %}
-            <div class="comment">
-                <p class="xx-small-text comment-text">{{ comment[1] }}</p>
-                <p class="comment-text">{{ comment[0] }}</p>
-                <p class="xx-small-text comment-text">{{ comment[2] }}</p>
+            <div class="comment black-shadow-box" style="margin-bottom: 14px; padding: 12px;">
+                <p class="xx-small-text comment-text">{{ comment[2] }}</p> <!-- Date -->
+                <p class="comment-text bold">{{ comment[0] }}</p>       <!-- Author -->
+                <p class="comment-text">{{ comment[1] }}</p>            <!-- Body -->
             </div>
             {% endfor %}
+        </section>
 
-        </div>
+    </main>
 
-        <footer>{% include "elements/footer.html" %}</footer>
+    <footer>
+        {% include "elements/footer.html" %}
+    </footer>
 
-    </body>
+</body>
 </html>

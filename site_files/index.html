@@ -1,40 +1,45 @@
 <!DOCTYPE html>
-<html>
-    <head>{% include "elements/head.html" %}</head>
+<html lang="en">
+<head>
+    {% include "elements/head.html" %}
+</head>
+
+<body>
 
     {% include "elements/navbar.html" %}
 
-    <body>
-        
-        {% if current_user.is_authenticated %}
-            <P>Hi {{ current_user.name }}!</P>
-        {% endif %}
+    {% if current_user.is_authenticated %}
+        <p>Hi {{ current_user.name }}!</p>
+    {% endif %}
 
-        <div>
-                <h class="xx-large-text">Welcome to Alex's Website</h><br><br>
+    <main class="post-blog">
 
-                <h>:</h><br><br>
+        <h1 class="xx-large-text">Welcome to Alex's Website</h1>
 
-                <h>:</h><br><br>
-
-                <h>:</h><br><br>
-
-                <h>:</h><br><br>
-
-                <h>:</h><br><br>
-
-                <h>:</h><br><br>
-
-                <h>:</h><br><br>
-
-                <h>:</h><br><br>
-
-            <h>Current favourite song:</h><br><br>
-            <div style="left: 0; width: 100%; height: 152px; position: relative;"><iframe src="https://open.spotify.com/embed/track/1FPSkRkDlthbAceSIIWc4C?utm_source=oembed" style="top: 0; left: 0; width: 100%; height: 100%; position: absolute; border: 0;" allowfullscreen allow="clipboard-write *; encrypted-media *; fullscreen *; picture-in-picture *;"></iframe></div>
-        
+        <!-- Spacer content (temporary placeholders) -->
+        <div class="large-text">
+            <p>:</p>
+            <p>:</p>
+            <p>:</p>
+            <p>:</p>
         </div>
 
-        <footer>{% include "elements/footer.html" %}</footer>
+        <h2 class="large-text">Current favourite song:</h2>
 
-    </body>
+        <div class="song-card black-shadow-box">
+            <iframe
+                src="https://open.spotify.com/embed/track/1FPSkRkDlthbAceSIIWc4C"
+                allow="clipboard-write; encrypted-media; fullscreen; picture-in-picture">
+            </iframe>
+        </div>
+
+
+
+    </main>
+
+    <footer>
+        {% include "elements/footer.html" %}
+    </footer>
+
+</body>
 </html>

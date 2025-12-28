@@ -1,42 +1,84 @@
 <!DOCTYPE html>
-<html>
-    <head>{% include "elements/head.html" %}</head>
+<html lang="en">
+<head>
+    {% include "elements/head.html" %}
+</head>
+
+<body>
 
     {% include "elements/navbar.html" %}
 
-    <body>
-        <div>
-            {% if current_user.is_authenticated %}
-            <div class="post-blog"><a class="button" href="{{ url_for('blog_post') }}">Post</a></div>
-            {% endif %}
-                    <!-- Search form -->
-            <form method="get" action="{{ request.path }}">
-                <input type="text" name="search" value="{{ search_query }}" placeholder="Search...">
-                <button type="submit">Search</button>
-            </form>
-            {% if search_query %}
-                <h>Results for: {{search_query}}</h>
-            {% endif %}
+    <main class="post-blog">
 
+        {% if current_user.is_authenticated %}
+            <div style="padding: 14px 28px;">
+                <a class="button" href="{{ url_for('blog_post') }}">Post</a>
+            </div>
+        {% endif %}
+
+        <!-- Search -->
+        <form method="get" action="{{ request.path }}" style="padding: 14px 28px;">
+            <input
+                type="text"
+                name="search"
+                value="{{ search_query }}"
+                placeholder="Search..."
+                class="textarea"
+                style="max-width: 260px; display: inline-block;"
+            >
+            <button type="submit">Search</button>
+        </form>
+
+        {% if search_query %}
+            <h2 class="large-text" style="padding: 14px 28px;">
+                Results for: "{{ search_query }}"
+            </h2>
+        {% endif %}
+
+        <!-- Blog list -->
+        <section>
             {% for blog in blogs %}
-            <p><a href="/blog/{{ blog.slug }}">{{ blog.title }}</a></p>
-            <br>
+                <a href="/blog/{{ blog.slug }}" class="full-blog-link" style="text-decoration: none;">
+                    <div class="comment black-shadow-box" style="cursor: pointer; display: flex; flex-direction: column; gap: 4px;">
+                        <!-- Blog title -->
+                        <p class="comment-text bold" style="margin: 0; font-size: 1.1rem;">
+                            {{ blog.title }}
+                        </p>
+                        <!-- Date posted -->
+                        <p class="comment-text" style="margin: 0; font-size: 0.85rem; color: #A9B4C2;">
+                            {{ blog.date_posted.strftime('%b %d, %Y • %H:%M') }}
+                        </p>
+                    </div>
+                </a>
             {% endfor %}
-        </div>
+        </section>
 
-        <div id="pagination">
+
+
+        <!-- Pagination -->
+        <div id="pagination" style="padding: 20px 28px;">
             {% if pagination.has_prev %}
-                <a href="{{ request.path }}?page={{ pagination.prev_num }}&search={{ search_query }}">Previous</a>
+                <a class="button" href="{{ request.path }}?page={{ pagination.prev_num }}&search={{ search_query }}">
+                    Previous
+                </a>
             {% endif %}
-        
-            Page {{ pagination.page }} of {{ pagination.pages }}
-        
+
+            <span style="margin: 0 12px;">
+                Page {{ pagination.page }} of {{ pagination.pages }}
+            </span>
+
             {% if pagination.has_next %}
-                <a href="{{ request.path }}?page={{ pagination.next_num }}&search={{ search_query }}">Next</a>
+                <a class="button" href="{{ request.path }}?page={{ pagination.next_num }}&search={{ search_query }}">
+                    Next
+                </a>
             {% endif %}
         </div>
 
-        <footer>{% include "elements/footer.html" %}</footer>
+    </main>
 
-    </body>
+    <footer>
+        {% include "elements/footer.html" %}
+    </footer>
+
+</body>
 </html>

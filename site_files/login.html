@@ -1,48 +1,58 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+<head>
+    {% include "elements/head.html" %}
+</head>
 
-    <head>{% include "elements/head.html" %}</head>
+<body>
 
     {% include "elements/navbar.html" %}
 
-    <body>
-        
-        {% if current_user.is_authenticated %}
-            <meta http-equiv="refresh" content="0;url={{ url_for('index')}}" />
-        {% endif %}
-        {% if passed %}
-            <h>Logging you in...</h>
-        {% else %}
-            <div class="center-screen">
-                <div>
-                    <h class="title">Login</h>
-                    <br>
-                    <br>
-                    <form method="post" >
-                        {{ form.csrf_token }}
-                        {{form.hidden_tag()}}
+    {% if current_user.is_authenticated %}
+        <meta http-equiv="refresh" content="0;url={{ url_for('index')}}" />
+        <h2 class="large-text" style="padding: 28px;">Logging you in...</h2>
+    {% else %}
+        <main class="center-screen">
 
-                        <p>Email</p>
-                        {{form.email()}}
-                        <br>
-                        <p>Password</p>
-                         {{form.password_hash()}}
-                        <br>
-                        <br>
-                        <!--form.recaptcha()-->
-                        <br>
-                        <br>
-                        {{form.submit(class="button")}}
-                        <br>
-                        <br>
-                        <a class="button" href="{{url_for('register')}}">Don't have an account?</a>
-                    </form>
-                </div>
+            <div class="post-blog black-shadow-box" style="padding: 28px; max-width: 400px; width: 90%;">
+
+                <h1 class="title">Login</h1>
+
+                <form method="post" style="margin-top: 20px;">
+                    {{ form.csrf_token }}
+                    {{ form.hidden_tag() }}
+
+                    <div style="margin-bottom: 14px;">
+                        <p class="bold">Email</p>
+                        {{ form.email(class="textarea") }}
+                    </div>
+
+                    <div style="margin-bottom: 14px;">
+                        <p class="bold">Password</p>
+                        {{ form.password_hash(class="textarea") }}
+                    </div>
+
+                    <!-- Optional: ReCAPTCHA -->
+                    <!--form.recaptcha()-->
+
+                    <div style="margin-top: 20px;">
+                        {{ form.submit(class="button") }}
+                    </div>
+
+                    <div style="margin-top: 14px;">
+                        <a class="button" href="{{ url_for('register') }}">Don't have an account?</a>
+                    </div>
+
+                </form>
+
             </div>
-        {% endif %}
 
-    </body>
+        </main>
+    {% endif %}
 
-    <footer>{% include "elements/footer.html" %}</footer>
+    <footer>
+        {% include "elements/footer.html" %}
+    </footer>
 
+</body>
 </html>
