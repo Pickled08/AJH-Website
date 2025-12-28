@@ -1,6 +1,5 @@
 #Imports
 from flask import Flask
-from threading import Thread
 from flask import render_template, abort, redirect, url_for, flash, request
 import os
 from dotenv import load_dotenv
@@ -14,6 +13,13 @@ from flask_login import UserMixin, login_user, LoginManager, login_required, log
 import json
 import re
 import uuid
+from functools import wraps
+from flask import abort
+from flask_login import current_user
+from flask_wtf import CSRFProtect
+
+# Initialize CSRF protection
+csrf = CSRFProtect(app)
 
 load_dotenv()
 
@@ -21,20 +27,19 @@ load_dotenv()
 SECRET_KEY = os.getenv("SECRET_KEY")
 RECAPTCHA_PUBLIC_KEY = os.getenv("RECAPTCHA_PUBLIC_KEY")
 RECAPTCHA_PRIVATE_KEY = os.getenv("RECAPTCHA_PRIVATE_KEY")
-ADMINS = os.getenv("ADMINS")
-ADMIN_ONLY_POSTING = os.getenv("ADMIN_ONLY_POSTING")
 
 #Admin Tools------------------
 
-#Admin Only Posting
-admin_only_posting = ADMIN_ONLY_POSTING
-#-----------------------------
+def admin_required(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if not current_user.is_authenticated or not getattr(current_user, 'is_admin', False):
+            abort(403)  # Forbidden
+        return f(*args, **kwargs)
+    return wrapper
 
-#Load Json from env variables
-admins = json.loads(ADMINS)
 
 #Setup
-app = Flask(__name__)
 app = Flask(__name__, template_folder="site_files")
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.config["SECRET_KEY"] = SECRET_KEY
@@ -55,6 +60,8 @@ class Users(db.Model, UserMixin):
     name = db.Column(db.String(32), nullable=False)
     email = db.Column(db.String(128), nullable=False, unique=True)
     date_added = db.Column(db.DateTime, default=datetime.now(UTC))
+
+    is_admin = db.Column(db.Boolean, default=False)
 
     #Password
     password_hash = db.Column(db.String(128))
@@ -507,98 +514,109 @@ def handle_error(e):
 #Admin Page
 @app.route("/admin")
 @login_required
+@admin_required
 def admin():
-    #Check if current user is in admin list
-    for admin in admins["admins"]:
-        if current_user.email == admin:
-            return(render_template("admin/admin_dashboard.html"))
-    else:
-        abort(401)
+    return(render_template("admin/admin_dashboard.html"))
 
-#Admin Pages
+
+# Admin Pages
 @app.route("/admin/<page>")
 @login_required
+@admin_required
 def admin_pages(page):
-    #Lowercase to avoid accidently caps
-    page = str.lower(page)
+    # Lowercase to avoid accidental caps
+    page = page.lower()
 
-    #Check if current user is in admin list
-    for admin in admins["admins"]:
-        if current_user.email == admin:
-            #User management page
-            if page == "users":
-                #Pagination Vars
-                page = request.args.get('page', 1, type=int)  # default page 1
-                per_page = 20
+    # User management page
+    if page == "users":
+        # Pagination vars
+        page_num = request.args.get('page', 1, type=int)
+        per_page = 20
 
-                search_query = request.args.get('search', '', type=str)
-                # Initialize the query
-                query = Users.query
+        search_query = request.args.get('search', '', type=str)
 
-                # If there's a search term, filter it
-                if search_query:
-                    query = query.filter(or_(Users.name.ilike(f"%{search_query}%"),Users.email.ilike(f"%{search_query}%")))  # Case-insensitive
+        # Initialize the query
+        query = Users.query
 
-                #Paginate Results
-                pagination = query.order_by(Users.date_added).paginate(page=page, per_page=per_page, error_out=False)
-                registeredUsers = pagination.items
+        # Filter if search term exists
+        if search_query:
+            query = query.filter(
+                or_(
+                    Users.name.ilike(f"%{search_query}%"),
+                    Users.email.ilike(f"%{search_query}%")
+                )
+            )
 
-                #Get all users and order by date added
-                return(render_template("admin/admin_dashboard_userlist.html", registeredUsers=registeredUsers, pagination=pagination, search_query=search_query))
-    else:
-        abort(401)
+        # Paginate results
+        pagination = query.order_by(Users.date_added).paginate(
+            page=page_num,
+            per_page=per_page,
+            error_out=False
+        )
+        registeredUsers = pagination.items
 
-#Delete user
-@app.route("/admin/users/delete/<id>", methods=["GET", "POST"])
+        # Render template
+        return render_template(
+            "admin/admin_dashboard_userlist.html",
+            registeredUsers=registeredUsers,
+            pagination=pagination,
+            search_query=search_query
+        )
+
+    # If the page is unknown, return 404
+    abort(404)
+
+
+# Delete user (secure version)
+@app.route("/admin/users/delete/<int:user_id>", methods=["GET", "POST"])
 @login_required
-def admin_delete_user(id):
-    #Check if current user is in admin list
-    for admin in admins["admins"]:
-        if current_user.email == admin:
+@admin_required
+def admin_delete_user(user_id):
+    # Lookup the user to delete
+    user = Users.query.filter_by(id=user_id).first_or_404()
+
+    # Prevent admin from deleting themselves
+    if user.id == current_user.id:
+        flash("You cannot delete yourself.")
+        return redirect(url_for("admin_pages", page="users"))
+
+    # Optional: prevent deleting the last admin
+    if user.is_admin:
+        admin_count = Users.query.filter_by(is_admin=True).count()
+        if admin_count <= 1:
+            flash("Cannot delete the last remaining admin.")
+            return redirect(url_for("admin_pages", page="users"))
+
+    # POST: confirm deletion
+    if request.method == "POST":
+        user_choice = request.form.get("choice")
+        if user_choice == "yes":
             try:
-                
-                #Ask user if they want to delete user
-                if request.method == 'POST':
-                    user_choice = request.form.get('choice')
-                    if user_choice == 'yes':
+                # Delete comments
+                Comments.query.filter_by(user_id=user.id).delete()
+                # Delete blogs
+                Blogs.query.filter_by(author=user.id).delete()
+                # Delete user
+                db.session.delete(user)
+                db.session.commit()
 
-                        #Lookup and Delete user and other data related to user
-                        user = Users.query.filter_by(id=id).first()
-                        comments = Comments.query.filter_by(user_id=id)
-                        blogs = Blogs.query.filter_by(author=id)
+                flash(f"User {user.name} deleted successfully.")
+                return redirect(url_for("admin_pages", page="users"))
+            except Exception as e:
+                db.session.rollback()
+                flash(f"An error occurred: {str(e)}")
+                return redirect(url_for("admin_pages", page="users"))
+        else:
+            return redirect(url_for("admin_pages", page="users"))
 
-                        for comment in comments:
-                            db.session.delete(comment)
-                            db.session.commit()
+    # GET: show confirmation page
+    return render_template("confirm.html", pageName="Confirm")
 
-                        for blog in blogs:
-                            db.session.delete(blog)
-                            db.session.commit()
-
-                        db.session.delete(user)
-                        db.session.commit()
-
-                        flash(f"User {id} Deleted")
-                        return(redirect(url_for("admin_pages", page="users")))
-                    else:
-                        return(redirect(url_for("admin_pages", page="users")))
-    
-                return render_template("confirm.html", pageName="Confirm")
-            
-            #Error if someing goes wrong
-            except:
-                flash("<strong>An error occurred!</stong> Plese try again")
-                return(redirect(url_for("admin_pages", page="users")))
-    else:
-        abort(401)
 
 #Functions to run the server
 def run():
   #App Run parameters
   app.run(host='0.0.0.0',port=8080)
   
-#Start using threading
-def start():
-    t = Thread(target=run)
-    t.start()
-
+if __name__ == "__main__":
+    run()
