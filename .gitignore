@@ -1,6 +1,5 @@
 __pycache__
 .env
 instance
-output.mp3
 migrations
 dev.py
