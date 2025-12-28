@@ -10,7 +10,9 @@ COPY . .
 EXPOSE 8080
 
 ENV FLASK_APP=server.py
-ENV FLASK_ENV=production
-ENV PYTHONUNBUFFERED=1
+ENV FLASK_RUN_HOST=0.0.0.0
+ENV FLASK_RUN_PORT=8080
+ENV FLASK_ENV=development
 
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:8080", "server:app"]
+CMD ["python", "server.py"]
+

@@ -35,6 +35,7 @@
     <th>Name</th>
     <th>Email</th>
     <th>Date added</th>
+    <th>Is Admin</th>
     <th>Delete User</th>
   </tr>
   {% for user in registeredUsers %}
@@ -43,7 +44,8 @@
     <th>{{ user.name }}</th>
     <th>{{ user.email }}</th>
     <th>{{ user.date_added }}</th>
-    <th><a href="{{url_for('admin_delete_user', id='')}}{{user.id}}">Delete</a></th>
+    <th>{{ user.is_admin }}</th>
+    <th><a href="{{ url_for('admin_delete_user', user_id=user.id) }}">Delete</a></th>
   </tr>
   {% endfor %}
 </table>

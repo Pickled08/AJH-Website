@@ -18,9 +18,6 @@ from flask import abort
 from flask_login import current_user
 from flask_wtf import CSRFProtect
 
-# Initialize CSRF protection
-csrf = CSRFProtect(app)
-
 load_dotenv()
 
 #.env variables
@@ -49,6 +46,9 @@ app.config["DEBUG"] = False
 app.config["RECAPTCHA_PUBLIC_KEY"] = RECAPTCHA_PUBLIC_KEY
 app.config["RECAPTCHA_PRIVATE_KEY"] = RECAPTCHA_PRIVATE_KEY
 app.url_map.strict_slashes = False
+
+# Initialize CSRF protection
+csrf = CSRFProtect(app)
 
 #Initialize Database
 db = SQLAlchemy(app)
@@ -490,26 +490,15 @@ def logout():
 def account():
     return render_template("account.html", pageName="Account")
 
-#Error Pages
 @app.errorhandler(Exception)
 def handle_error(e):
-    try:
-        #Error Page 401
-        if e.code == 401:
-            return render_template('error_codes/401.html', pageName="401"), 401
-        
-        #Error Page 404
-        elif e.code == 404:
-            return render_template('error_codes/404.html', pageName="404"), 404
-        
-        #Error Page 500
-        elif e.code == 500:
-            return render_template('error_codes/generic_error.html', pageName="500", errorTitle="Internal Server Error", errorExplain="The server has run into an error trying to load this page"), 500
-        raise e
-    
-    #Any other Error
-    except:
-        return render_template('error_codes/generic_error.html', pageName=e.code, errorTitle="Error", errorExplain="An Error Occurred"), e.code
+    code = getattr(e, 'code', 500)  # default to 500 if no code
+    if code == 401:
+        return render_template('error_codes/401.html', pageName="401"), 401
+    elif code == 404:
+        return render_template('error_codes/404.html', pageName="404"), 404
+    else:
+        return render_template('error_codes/generic_error.html', pageName=str(code), errorTitle="Error", errorExplain=str(e)), code
 
 #Admin Page
 @app.route("/admin")
@@ -568,12 +557,10 @@ def admin_pages(page):
 
 
 # Delete user (secure version)
-@app.route("/admin/users/delete/<int:user_id>", methods=["GET", "POST"])
+@app.route("/admin/users/delete/<user_id>", methods=["GET", "POST"], endpoint="admin_delete_user")
 @login_required
-@admin_required
 def admin_delete_user(user_id):
-    # Lookup the user to delete
-    user = Users.query.filter_by(id=user_id).first_or_404()
+    user = Users.query.get(user_id)
 
     # Prevent admin from deleting themselves
     if user.id == current_user.id:
