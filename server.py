@@ -214,43 +214,21 @@ def blog_read(slug):
 
             #Validate Form
             if form.validate_on_submit():
-                if admin_only_posting:
-                        #Check if current user is in admin list
-                    for admin in admins["admins"]:
-                        if current_user.email == admin:
-                            #Vars
-                            body = form.body.data
-                            post_id = blog.id
-                            user_id = current_user.id
+                #Vars
+                body = form.body.data
+                post_id = blog.id
+                user_id = current_user.id
 
-                            comment = Comments(body=body, post_id=post_id, user_id=user_id)
+                comment = Comments(body=body, post_id=post_id, user_id=user_id)
 
-                            #Commits to DB
-                            db.session.add(comment)
-                            db.session.commit()
-                            flash("Posted Comment - Note: Admin Only Posting is set to true")
+                #Commits to DB
+                db.session.add(comment)
+                db.session.commit()
+                flash("Posted Comment")
 
-                            #Clear form
-                            form.body.data = ""
-                            return(redirect(url_for("blog_read", slug=slug)))
-                        else:
-                            flash("Your Comment could not be posted you are not an admin")
-                else:
-                    #Vars
-                    body = form.body.data
-                    post_id = blog.id
-                    user_id = current_user.id
-
-                    comment = Comments(body=body, post_id=post_id, user_id=user_id)
-
-                    #Commits to DB
-                    db.session.add(comment)
-                    db.session.commit()
-                    flash("Posted Comment")
-
-                    #Clear form
-                    form.body.data = ""
-                    return(redirect(url_for("blog_read", slug=slug)))
+                #Clear form
+                form.body.data = ""
+                return(redirect(url_for("blog_read", slug=slug)))
 
         #Comment load
         current_post_id = blog.id
@@ -331,49 +309,27 @@ def blog_post():
 
     #Validate Form
     if form.validate_on_submit():
-        if admin_only_posting:
-            #Check if current user is in admin list
-            for admin in admins["admins"]:
-                if current_user.email == admin:
-                    #Vars
-                    body = form.body.data
-                    post_id = blog.id
-                    user_id = current_user.id
+        #Vars
+        title = form.title.data
+        body = form.body.data
+        author = current_user.id
+        #      Replaces all non allowed charaters
+        #      |                  Replaces spaces with underscores
+        #      |                  |                  Puts title in lowercase
+        #      |                  |                  |                          Adds a UUID to the end to avoid dupicate urls
+        slug = re.sub(r"\W+", "", re.sub(r"\s", "_", str.lower(title))) + "-" + str(uuid.uuid4())
 
-                    comment = Comments(body=body, post_id=post_id, user_id=user_id)
+        blog = Blogs(title=title, body=body, slug=slug, author=author)
 
-                    #Commits to DB
-                    db.session.add(comment)
-                    db.session.commit()
-                    flash("Posted Post - Note: Admin Only Posting is set to true")
+        #Committs to DB
+        db.session.add(blog)
+        db.session.commit()
+        flash("Posted Blog")
 
-                    #Clear form
-                    form.body.data = ""
-                    return(redirect(url_for("blog_read", slug=slug)))
-                else:
-                    flash("Your Post could not be posted you are not an admin")
-        else:
-            #Vars
-            title = form.title.data
-            body = form.body.data
-            author = current_user.id
-            #      Replaces all non allowed charaters
-            #      |                  Replaces spaces with underscores
-            #      |                  |                  Puts title in lowercase
-            #      |                  |                  |                          Adds a UUID to the end to avoid dupicate urls
-            slug = re.sub(r"\W+", "", re.sub(r"\s", "_", str.lower(title))) + "-" + str(uuid.uuid4())
-
-            blog = Blogs(title=title, body=body, slug=slug, author=author)
-
-            #Committs to DB
-            db.session.add(blog)
-            db.session.commit()
-            flash("Posted Blog")
-
-            #Clear Form
-            form.title.data = ""
-            form.body.data = ""
-            return(redirect(url_for("blog_read", slug=slug)))
+        #Clear Form
+        form.title.data = ""
+        form.body.data = ""
+        return(redirect(url_for("blog_read", slug=slug)))
 
     return(render_template("blog_post.html", pageName="Blog", form=form))
         
