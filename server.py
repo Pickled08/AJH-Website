@@ -342,7 +342,19 @@ def blog_post():
 @app.route("/contact")
 @login_required
 def contact():
-    return(render_template("contact.html", pageName="Contact"))
+    #No api available :(
+    instagram = {
+        "username": "pickled08",
+        "followers": "117",
+        "posts": 31
+    }
+
+    # GitHub stats will be fetched via front-end JS
+    github = {
+        "username": "Pickled08"
+    }
+
+    return(render_template("contact.html", pageName="Contact", instagram=instagram, github=github))
 
 #Github Link
 @app.route("/github")

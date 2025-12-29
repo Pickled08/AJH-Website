@@ -8,23 +8,56 @@
 
     {% include "elements/navbar.html" %}
 
-    <main class="post-blog" style="padding: 28px; max-width: 600px; margin: auto;">
+        <main class="post-blog" style="padding: 28px; max-width: 600px; margin: auto;">
 
-        <h2 class="large-text bold" style="margin-bottom: 20px;">Follow me on Instagram:</h2>
-        <!-- You can embed Instagram widget here -->
-        <div class="black-shadow-box" style="padding: 12px; margin-bottom: 28px;">
-            <p class="bold">Instagram embed placeholder</p>
-        </div>
+            <!-- Instagram Card -->
+            <h2 class="large-text bold" style="margin-bottom: 12px;">Follow me on Instagram:</h2>
+            <a href="https://www.instagram.com/{{ instagram.username }}/" target="_blank" class="card-link">
+                <div class="black-shadow-box card">
+                    <img src="{{ url_for('static', filename='images/instagram-profile.jpg') }}" alt="Instagram profile" class="card-img">
+                    <div class="card-content">
+                        <p class="bold">@{{ instagram.username }}</p>
+                        <p class="medium-text gray-text">{{ instagram.followers }} followers • {{ instagram.posts }} posts</p>
+                        <p class="small-text">Click to follow on Instagram <span class="external-link">🔗</span></p>
+                    </div>
+                </div>
+            </a>
 
-        <h2 class="large-text bold" style="margin-bottom: 20px;">Check out my GitHub:</h2>
-        <div class="iframely-embed black-shadow-box" style="padding: 12px;">
-            <div class="iframely-responsive" style="height: 140px; padding-bottom: 0;">
-                <a href="https://github.com/Pickled08" data-iframely-url="https://iframely.net/W4UJ1mKP?theme=dark"></a>
-            </div>
-        </div>
-        <script async src="https://iframely.net/embed.js"></script>
+            <!-- GitHub Card -->
+            <h2 class="large-text bold" style="margin-bottom: 12px;">Check out my GitHub:</h2>
+            <a href="https://github.com/{{ github.username }}" target="_blank" class="card-link">
+                <div class="black-shadow-box card">
+                    <img src="{{ url_for('static', filename='images/github-logo.png') }}" alt="GitHub logo" class="card-img">
+                    <div class="card-content">
+                        <p class="bold">{{ github.username }}</p>
+                        <p class="medium-text gray-text" id="github-stats">Loading stats...</p>
+                        <p class="small-text">Check out my projects <span class="external-link">🔗</span></p>
+                    </div>
+                </div>
+            </a>
 
-    </main>
+        </main>
+
+        <!-- GitHub API JS -->
+        <script>
+        fetch('https://api.github.com/users/{{ github.username }}')
+        .then(res => res.json())
+        .then(data => {
+            const stats = `${data.public_repos} repos • ${data.followers} followers • ${data.following} following`;
+            document.getElementById('github-stats').innerText = stats;
+        })
+        .catch(err => {
+            console.error(err);
+            document.getElementById('github-stats').innerText = 'Stats unavailable';
+        });
+        </script>
+
+
+
+
+
+
+
 
     <footer>
         {% include "elements/footer.html" %}

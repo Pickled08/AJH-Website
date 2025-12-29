@@ -259,3 +259,61 @@ button:active,
     transform: translateY(-2px);
     box-shadow: 0 6px 14px rgba(0,0,0,0.6);
 }
+
+/* ========== Compact Card Styles ========== */
+.card-link {
+    text-decoration: none;
+}
+
+.card {
+    display: flex;
+    align-items: center;
+    gap: 8px;                /* tighter horizontal gap between image and text */
+    padding: 8px 12px;       /* tighter card padding */
+    border-radius: 12px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background-color: #0B0E0D;
+}
+
+.card:hover {
+    transform: translateY(-1px);          
+    box-shadow: 0 4px 12px rgba(0,0,0,0.6); 
+}
+
+.card-img {
+    width: 45px;            
+    height: 45px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.card-content {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Vertical gaps between texts */
+.card-content p {
+    margin: 1px 0;          
+}
+
+.medium-text {
+    font-size: 0.9rem;
+}
+
+.gray-text {
+    color: gray;
+}
+
+.small-text {
+    font-size: 0.8rem;
+}
+
+.external-link {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.card:hover .external-link {
+    opacity: 1;
+}
