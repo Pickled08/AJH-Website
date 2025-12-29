@@ -5,73 +5,78 @@
 </head>
 
 <body>
-
     {% include "elements/navbar.html" %}
 
-    {% if current_user.is_authenticated %}
-        <meta http-equiv="refresh" content="0;url={{ url_for('index')}}" />
-        <h2 class="large-text" style="padding: 28px;">Redirecting...</h2>
-    {% elif email %}
-        <meta http-equiv="refresh" content="0;url={{ url_for('login')}}" />
-        <h2 class="large-text" style="padding: 28px;">Redirecting to login...</h2>
-    {% else %}
+    <main class="center-screen">
+        <div class="post-blog black-shadow-box" style="padding: 28px; max-width: 400px; width: 90%;">
+            
+            <h1 class="title" style="font-size: 48px; word-wrap: break-word;">Register</h1>
 
-        <main class="center-screen">
-
-            <div class="post-blog black-shadow-box" style="padding: 28px; max-width: 400px; width: 90%;">
-
-                <h1 class="title" style="font-size: 48px; word-wrap: break-word;">Register</h1>
-
-                {% if exists %}
-                    <p class="bold" style="color: #A9B4C2; margin-top: 10px;">Account already exists</p>
+            <!-- Flash messages -->
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
                 {% endif %}
+            {% endwith %}
 
-                <form method="post" style="margin-top: 20px;">
-                    {{ form.csrf_token }}
-                    {{ form.hidden_tag() }}
+            <!-- Duplicate email -->
+            {% if exists %}
+                <p class="bold" style="color: #A9B4C2; margin-top: 10px;">Email already registered</p>
+            {% endif %}
 
-                    <div style="margin-bottom: 14px;">
-                        <p class="bold">Name</p>
-                        {{ form.name(class="textarea") }}
-                    </div>
+            <form method="post" style="margin-top: 20px;">
+                {{ form.csrf_token }}
+                {{ form.hidden_tag() }}
 
-                    <div style="margin-bottom: 14px;">
-                        <p class="bold">Email</p>
-                        {{ form.email(class="textarea") }}
-                    </div>
+                <div style="margin-bottom: 14px;">
+                    <p class="bold">Name</p>
+                    {{ form.name(class="textarea") }}
+                    {% if form.name.errors %}
+                        <p class="small-text" style="color: #ff6b6b;">{{ form.name.errors[0] }}</p>
+                    {% endif %}
+                </div>
 
-                    <div style="margin-bottom: 14px;">
-                        <p class="bold">Password</p>
-                        {{ form.password_hash(class="textarea") }}
-                    </div>
+                <div style="margin-bottom: 14px;">
+                    <p class="bold">Email</p>
+                    {{ form.email(class="textarea") }}
+                    {% if form.email.errors %}
+                        <p class="small-text" style="color: #ff6b6b;">{{ form.email.errors[0] }}</p>
+                    {% endif %}
+                </div>
 
-                    <div style="margin-bottom: 14px;">
-                        <p class="bold">Confirm Password</p>
-                        {{ form.password_hash2(class="textarea") }}
-                    </div>
+                <div style="margin-bottom: 14px;">
+                    <p class="bold">Password</p>
+                    {{ form.password_hash(class="textarea") }}
+                    {% if form.password_hash.errors %}
+                        <p class="small-text" style="color: #ff6b6b;">{{ form.password_hash.errors[0] }}</p>
+                    {% endif %}
+                </div>
 
-                    <!-- Optional: Recaptcha -->
-                    <!--form.recaptcha()-->
+                <div style="margin-bottom: 14px;">
+                    <p class="bold">Confirm Password</p>
+                    {{ form.password_hash2(class="textarea") }}
+                    {% if form.password_hash2.errors %}
+                        <p class="small-text" style="color: #ff6b6b;">{{ form.password_hash2.errors[0] }}</p>
+                    {% endif %}
+                </div>
 
-                    <div style="margin-top: 20px;">
-                        {{ form.submit(class="button") }}
-                    </div>
+                <div style="margin-top: 20px;">
+                    {{ form.submit(class="button") }}
+                </div>
 
-                    <div style="margin-top: 14px;">
-                        <a class="button" href="{{ url_for('login') }}">Already have an account?</a>
-                    </div>
-
-                </form>
-
-            </div>
-
-        </main>
-
-    {% endif %}
+                <div style="margin-top: 14px;">
+                    <a class="button" href="{{ url_for('login') }}">Already have an account?</a>
+                </div>
+            </form>
+        </div>
+    </main>
 
     <footer>
         {% include "elements/footer.html" %}
     </footer>
-
 </body>
 </html>

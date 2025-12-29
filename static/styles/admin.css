@@ -1,38 +1,286 @@
-html {
+/* Global styles */
+html, body {
     font-family: Arial, Helvetica, sans-serif;
-}
-table {
-    font-family: Arial, Helvetica, sans-serif;
-    border-collapse: collapse;
-    width: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: #f9f9f9;
 }
 
-td, th {
-    border: 1px solid #dddddd;
+h1, h2, h3, h4, h5, h6 {
+    margin: 0 0 10px 0;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 0 20px;
+}
+
+/* Table styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-top: 20px;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 12px 15px;
     text-align: left;
-    padding: 8px;
+}
+
+th {
+    background-color: #4CAF50;
+    color: white;
 }
 
 tr:nth-child(even) {
-    background-color: #dddddd;
+    background-color: #f2f2f2;
 }
 
-a:link {
-    color: blue;
-  }
-  
-  a:visited {
-    color: blue;
-  }
-  
-  a:hover {
-    color: red;
-  }
-  
-  a:link, a:visited {
-    text-decoration: none;
-  }
+tr:hover {
+    background-color: #dcedc8; /* soft green hover */
+}
 
-h {
-  font-size: xx-large;
+/* Links - white text */
+a:link, a:visited, a:hover {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+/* Alerts */
+.alert {
+    padding: 12px 15px;
+    background-color: #4CAF50; /* green background */
+    color: #ffffff; /* white text */
+    margin-bottom: 15px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.closebtn {
+    margin-left: 15px;
+    color: white;
+    font-weight: bold;
+    float: right;
+    cursor: pointer;
+}
+
+/* Buttons */
+button, input[type="submit"], .btn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 7px 12px;
+    border: none;
+    cursor: pointer;
+    border-radius: 3px;
+    margin-left: 5px;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+button:hover, input[type="submit"]:hover, .btn:hover {
+    background-color: #388e3c; /* darker green hover */
+    color: white;
+}
+
+/* Search form */
+.search-form input[type="text"] {
+    padding: 7px 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+.search-form button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 7px 12px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.search-form button:hover {
+    background-color: #388e3c;
+}
+
+/* Pagination */
+#pagination {
+    margin: 20px 0;
+    text-align: center;
+}
+
+#pagination a {
+    margin: 0 5px;
+    padding: 5px 10px;
+    border: 1px solid #4CAF50;
+    border-radius: 3px;
+    color: white;
+    background-color: #4CAF50;
+}
+
+#pagination a:hover {
+    background-color: #388e3c;
+    color: white;
+}
+
+/* Responsive table */
+@media screen and (max-width: 768px) {
+    table, thead, tbody, th, td, tr {
+        display: block;
+    }
+
+    th {
+        position: sticky;
+        top: 0;
+        background-color: #4CAF50;
+    }
+
+    tr {
+        margin-bottom: 15px;
+        border-bottom: 2px solid #ddd;
+    }
+
+    td {
+        padding-left: 50%;
+        position: relative;
+    }
+
+    td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0;
+        width: 45%;
+        padding-left: 15px;
+        font-weight: bold;
+        white-space: nowrap;
+    }
+}
+
+/* Dashboard grid */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    margin-top: 30px;
+}
+
+/* Dashboard buttons */
+.dashboard-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    background-color: #4CAF50;
+    color: white;
+    padding: 25px 15px;
+    border-radius: 10px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+    text-align: center;
+    font-size: 1rem;
+}
+
+.dashboard-btn i {
+    font-size: 2.2rem;
+    margin-bottom: 10px;
+}
+
+.dashboard-btn span {
+    font-weight: bold;
+}
+
+.dashboard-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    background-color: #388e3c;
+    color: white;
+}
+
+.dashboard-btn.disabled {
+    background-color: #a5d6a7;
+    color: white;
+    cursor: not-allowed;
+}
+
+.dashboard-btn.disabled:hover {
+    transform: none;
+    box-shadow: none;
+    background-color: #a5d6a7;
+    color: white;
+}
+
+.dashboard-link:link,
+.dashboard-link:visited,
+.dashboard-link:hover,
+.dashboard-link:active {
+    color: #4CAF50;       /* green text */
+    text-decoration: none; /* remove underline if you want */
+    font-weight: bold;
+}
+
+.dashboard-link:hover {
+    color: #388e3c;        /* darker green on hover */
+    text-decoration: underline; /* optional */
+}
+
+/* Dropdown container */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+/* 3-dot button */
+.dropbtn {
+    background-color: transparent; /* no background */
+    color: #4CAF50;               /* green dots */
+    font-size: 1.5rem;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    line-height: 1;
+}
+
+/* Remove block hover effect */
+.dropbtn:hover {
+    background-color: transparent; /* keep it transparent */
+    color: #388e3c;               /* darken dots on hover */
+}
+
+/* Dropdown content (hidden by default) */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    left: 0;
+    background-color: #ffffff; /* white dropdown */
+    min-width: 100px;
+    box-shadow: 0px 4px 8px rgba(0,0,0,0.15);
+    border-radius: 5px;
+    z-index: 1;
+    padding: 5px;
+    flex-direction: row; /* horizontal links */
+    gap: 5px;
+}
+
+/* Dropdown links */
+.dropdown-content a {
+    color: #4CAF50 !important;
+    text-decoration: none;
+    padding: 5px 10px;
+    font-weight: bold;
+    border-radius: 3px;
+    white-space: nowrap;
+}
+
+.dropdown-content a:hover {
+    background-color: #f2f2f2;
+    color: #388e3c !important;
+}
+
+/* Show dropdown on hover */
+.dropdown:hover .dropdown-content {
+    display: flex; /* horizontal layout */
 }

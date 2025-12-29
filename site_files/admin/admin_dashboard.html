@@ -1,22 +1,56 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/admin.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Optional: include a free icon library like Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<div class="container">
 
-    <head>
-        <title>Admin</title><link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/admin.css') }}"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    </head>
-
+    <!-- Flash messages -->
     {% for message in get_flashed_messages() %}
-    <div class="alert">
-      <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span> 
-      {{message|safe}}
-    </div>
-    
+        <div class="alert">
+            <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+            {{ message|safe }}
+        </div>
     {% endfor %}
 
+    <!-- Welcome Header -->
+    <h2>Welcome, {{ current_user.name }}</h2>
+    <p>Admin Dashboard</p>
 
-    <body>
-        <h>Welcome {{current_user.name}}, to the Admin dashboard</h><br><br>
-        <a href="{{url_for('admin_pages', page='users')}}">User List</a><a style="float: right;" href="{{url_for('index')}}">Home</a>
-    </body>
+    <!-- Dashboard Buttons -->
+    <div class="dashboard-grid">
+        <a href="{{ url_for('admin_pages', page='users') }}" class="dashboard-btn">
+            <i class="fas fa-users"></i>
+            <span>User Management</span>
+        </a>
 
+        <a href="{{ url_for('admin_pages', page='posts') }}" class="dashboard-btn">
+            <i class="fas fa-file-alt"></i>
+            <span>Posts / Content</span>
+        </a>
+
+        <a href="{{ url_for('admin_pages', page='settings') }}" class="dashboard-btn">
+            <i class="fas fa-cogs"></i>
+            <span>Site Settings</span>
+        </a>
+
+        <a href="#" class="dashboard-btn disabled">
+            <i class="fas fa-chart-line"></i>
+            <span>Analytics (Coming Soon)</span>
+        </a>
+    </div>
+
+    <!-- Quick Home Link -->
+    <div style="margin-top: 20px;">
+        <a href="{{ url_for('index') }}" class="btn">Back to Home</a>
+    </div>
+
+</div>
+</body>
 </html>

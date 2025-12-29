@@ -18,27 +18,51 @@
 
         <!-- Spacer content (temporary placeholders) -->
         <div class="large-text">
-            <p>:</p>
-            <p>:</p>
-            <p>:</p>
-            <p>:</p>
+
+            <section class="featured-projects">
+                <h2 class="large-text">Latest Project</h2>
+                <div class="projects-grid">
+                    <a href="/projects/project1" class="card-link">
+                        <div class="card">
+                            <img src="{{ url_for('static', filename='images/project.png') }}" class="card-img" alt="This Website!">
+                            <div class="card-content">
+                                <p class="bold">This Website!</p>
+                                <p class="small-text gray-text">A web app built with Flask</p>
+                            </div>
+                        </div>
+                    </a>
+                    <!-- Add more cards -->
+                </div>
+            </section>
+            <section class="latest-blogs">
+                <h2 class="large-text">Latest Blogs</h2>
+                <div class="projects-grid">
+                    {% for entry in blogs_with_authors %}
+                    <a href="{{ url_for('blog_read', slug=entry.blog.slug) }}" class="card-link">
+                        <div class="card">
+                            <img src="{{ entry.blog.thumbnail_url if entry.blog.thumbnail_url else '/static/images/default-blog.png' }}" class="card-img" alt="{{ entry.blog.title }}">
+                            <div class="card-content">
+                                <p class="bold">{{ entry.blog.title }}</p>
+                                <p class="small-text gray-text">By {{ entry.author_name }} | {{ entry.blog.date_posted.strftime('%b %d, %Y') }}</p>
+                            </div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <br><br><br><br><br><br><br><br><br>
+
+
         </div>
-
-        <h2 class="large-text">Current favourite song:</h2>
-
-        <div class="song-card black-shadow-box">
-            <iframe
-                src="https://open.spotify.com/embed/track/1FPSkRkDlthbAceSIIWc4C"
-                allow="clipboard-write; encrypted-media; fullscreen; picture-in-picture">
-            </iframe>
-        </div>
-
-
 
     </main>
 
     <footer>
         {% include "elements/footer.html" %}
+        <br><br>
+        <a href="https://www.flaticon.com/free-icons/text" title="text icons">Text icons created by Freepik - Flaticon</a>
+        <a href="https://www.flaticon.com/free-icons/project" title="project icons">Project icons created by Tanah Basah - Flaticon</a>
     </footer>
 
 </body>

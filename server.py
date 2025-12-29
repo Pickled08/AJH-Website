@@ -38,6 +38,17 @@ def admin_required(f):
         return f(*args, **kwargs)
     return wrapper
 
+#--------------------------------
+
+#Requires Verification
+def Verification_required(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if not current_user.is_authenticated or not getattr(current_user, 'is_verified', False):
+            return(render_template("verification_required.html", pageName="Verification Required!"))
+        return f(*args, **kwargs)
+    return wrapper
+
 
 #Setup
 app = Flask(__name__, template_folder="site_files")
@@ -116,7 +127,18 @@ def load_user(user_id):
 #Home Page
 @app.route("/")
 def index():
-    return render_template("index.html", pageName="Home")
+    latest_blogs = Blogs.query.order_by(Blogs.date_posted.desc()).limit(3).all()
+
+    # Create a list of dicts with author names
+    blogs_with_authors = []
+    for blog in latest_blogs:
+        author_info = Users.query.filter_by(id=blog.author).first()
+        author_name = author_info.name if author_info else "Unknown"
+        blogs_with_authors.append({
+            "blog": blog,
+            "author_name": author_name
+        })
+    return render_template("index.html", pageName="Home", blogs_with_authors=blogs_with_authors)
 
 #About Page
 @app.route("/about")
@@ -195,77 +217,66 @@ def blog():
 
     return render_template("blog.html", pageName="Blog", blogs=blogs, search_query=search_query, pagination=pagination)
 
-
-
-
 @app.route("/blog/<slug>", methods=["GET", "POST"])
 def blog_read(slug):
-    #Finds blog by its slug
+    # Find blog by its slug
     blog = Blogs.query.filter_by(slug=slug).first()
-    #404 if no blog found
     if blog is None:
         abort(404)
-    else:
 
-        author_info = (Users.query.filter_by(id=blog.author).first())
-        author = author_info.name
-        author_id = int(author_info.id)
+    # Get author info
+    author_info = Users.query.filter_by(id=blog.author).first()
+    author = author_info.name if author_info else "Unknown"
+    author_id = int(author_info.id) if author_info else None
 
-        if current_user:
-            #Comment Post
-            body = None
+    form = CommentForm()
+    if current_user and form.validate_on_submit():
+        comment = Comments(
+            body=form.body.data,
+            post_id=blog.id,
+            user_id=current_user.id
+        )
+        db.session.add(comment)
+        db.session.commit()
+        flash("Posted Comment")
+        form.body.data = ""
+        return redirect(url_for("blog_read", slug=slug))
 
-            form = CommentForm()
+    # --- Pagination ---
+    page = request.args.get('page', 1, type=int)
+    per_page = 5  # number of comments per page
 
-            #Validate Form
-            if form.validate_on_submit():
-                #Vars
-                body = form.body.data
-                post_id = blog.id
-                user_id = current_user.id
+    comments_pagination = Comments.query.filter_by(post_id=blog.id).order_by(Comments.date_posted.asc()).paginate(page=page, per_page=per_page)
+    
+    # Format comments
+    comments_full = []
+    for comment in comments_pagination.items:
+        user = Users.query.filter_by(id=comment.user_id).first()
+        comments_full.append({
+            "body": comment.body,
+            "author_name": user.name if user else "Unknown",
+            "date_posted": comment.date_posted.strftime("%Y-%m-%d %H:%M:%S")
+        })
 
-                comment = Comments(body=body, post_id=post_id, user_id=user_id)
+    # Blog post date
+    date_posted = blog.date_posted.strftime("%Y-%m-%d %H:%M:%S")
 
-                #Commits to DB
-                db.session.add(comment)
-                db.session.commit()
-                flash("Posted Comment")
+    return render_template(
+        "blog_read.html",
+        pageName="Blog",
+        blog=blog,
+        form=form,
+        author=author,
+        author_id=author_id,
+        comments=comments_full,
+        comments_pagination=comments_pagination,
+        date_posted=date_posted
+    )
 
-                #Clear form
-                form.body.data = ""
-                return(redirect(url_for("blog_read", slug=slug)))
-
-        #Comment load
-        current_post_id = blog.id
-        comments = Comments.query.filter_by(post_id=current_post_id).limit(50)
-
-        #Format comment data
-        comments_full = []
-        for comment in comments:
-            #Get user who posted comment
-            user = Users.query.filter_by(id=comment.user_id).first()
-
-            #Data
-            body = comment.body
-            author_name = user.name
-            #Format date posted
-            datePosted = str(comment.date_posted)
-            datePosted = datePosted.split(".", 1)[0]
-            print(datePosted)
-
-            #Package into list
-            data = [body, author_name, datePosted]
-            #Add to main list
-            comments_full.append(data)
-
-        #Send Formated Date posted
-        date_posted = str(blog.date_posted)
-        date_posted = date_posted.split(".", 1)[0]
-
-        return(render_template("blog_read.html", pageName="Blog", blog=blog, form=form,author=author,author_id=author_id, comments=comments_full, date_posted=date_posted))
 
 #Deletes Blog post
 @app.route("/blog/delete/<id>", methods=['GET', 'POST'])
+@Verification_required
 @login_required
 def delete_blog(id):
     #Search for blog
@@ -303,8 +314,8 @@ def delete_blog(id):
     return render_template("confirm.html", pageName="Confirm")
     
     
-
 @app.route("/blog/post", methods=["GET", "POST"])
+@Verification_required
 @login_required
 def blog_post():
     title = None
@@ -380,37 +391,36 @@ def cookie_policy():
 #Register Page
 @app.route("/register", methods=["GET", "POST"])
 def register():
-    name = None
-    email = None
-    password_hash = None
     form = RegisterForm()
 
-    #Validate Form
     if form.validate_on_submit():
-        email = str.lower(form.email.data)
-        user = Users.query.filter_by(email=email).first()
-        if user is None:
-            #Hash Password
-            hashed_pw = generate_password_hash(form.password_hash.data, "scrypt")
-            user = Users(name=form.name.data, email=email, password_hash=hashed_pw)
+        email = form.email.data.lower()
+        existing_user = Users.query.filter_by(email=email).first()
+
+        if existing_user:
+            flash("Email already registered.")
+            return render_template("register.html", pageName="Register", exists=True, form=form)
+
+        # Create user using password setter
+        user = Users(name=form.name.data, email=email)
+        user.password = form.password_hash.data  # automatically hashes via setter
+
+        try:
             db.session.add(user)
             db.session.commit()
-            flash("Account Registerd")
-        else:
-            return render_template("register.html", pageName="Register",exists=True, form=form)
-        
-        name = form.name.data
-        email = str.lower(form.email.data)
+            flash("Account registered successfully! Please log in.")
+            return redirect(url_for("login"))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error creating account: {e}")
+            print("DB error:", e)
 
-        #Clear Form
-        form.name.data = ""
-        form.email.data = ""
-        form.password_hash.data = ""
-        form.password_hash2.data = ""
-        
-        #Redirect to homepage after submiting
-        return redirect(url_for("login"))
-    return render_template("register.html", pageName="Register", name=name, email=email, form=form)
+    # Debug info if form fails validation
+    elif request.method == "POST":
+        print("Form errors:", form.errors)
+
+    return render_template("register.html", pageName="Register", form=form)
+
 
 #Login Page
 @app.route("/login", methods=["GET", "POST"])
@@ -571,6 +581,41 @@ def admin_delete_user(user_id):
 
     # GET: show confirmation page
     return render_template("confirm.html", pageName="Confirm")
+
+# Verify user (secure version)
+@app.route("/admin/users/verify/<user_id>", methods=["GET", "POST"], endpoint="admin_verify_user")
+@login_required
+def admin_verify_user(user_id):
+    user = Users.query.get(user_id)
+
+    # POST: confirm deletion
+    if request.method == "POST":
+        user_choice = request.form.get("choice")
+        if user_choice == "yes":
+            try:
+                # Mark user as verified
+                user.is_verified = True
+
+                # Commit the change
+                db.session.commit()
+
+                flash(f"User {user.name} verified successfully.")
+                return redirect(url_for("admin_pages", page="users"))
+            except Exception as e:
+                db.session.rollback()
+                flash(f"An error occurred: {str(e)}")
+                return redirect(url_for("admin_pages", page="users"))
+        else:
+            return redirect(url_for("admin_pages", page="users"))
+
+    # GET: show confirmation page
+    return render_template("confirm.html", pageName="Confirm")
+
+@app.route("/verified-check")
+@Verification_required
+def verified_area():
+    return "You are verified!"
+
 
 
 #Functions to run the server

@@ -40,12 +40,32 @@
         <section style="margin: 28px;">
             {% for comment in comments %}
             <div class="comment black-shadow-box" style="margin-bottom: 14px; padding: 12px;">
-                <p class="xx-small-text comment-text">{{ comment[2] }}</p> <!-- Date -->
-                <p class="comment-text bold">{{ comment[0] }}</p>       <!-- Author -->
-                <p class="comment-text">{{ comment[1] }}</p>            <!-- Body -->
+                <p class="xx-small-text comment-text">{{ comment.date_posted }}</p> <!-- Date -->
+                <p class="comment-text">{{ comment.body }}</p>                        <!-- Body -->
+                <p class="comment-text bold">{{ comment.author_name }}</p>           <!-- Author -->
             </div>
             {% endfor %}
+
+            <!-- Pagination controls -->
+            <div style="display: flex; justify-content: space-between; margin-top: 14px;">
+                {% if comments_pagination.has_prev %}
+                    <a class="button" href="{{ url_for('blog_read', slug=blog.slug, page=comments_pagination.prev_num) }}">
+                        &laquo; Previous
+                    </a>
+                {% else %}
+                    <span></span>
+                {% endif %}
+
+                {% if comments_pagination.has_next %}
+                    <a class="button" href="{{ url_for('blog_read', slug=blog.slug, page=comments_pagination.next_num) }}">
+                        Next &raquo;
+                    </a>
+                {% else %}
+                    <span></span>
+                {% endif %}
+            </div>
         </section>
+
 
     </main>
 

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {% include "elements/head.html" %}
+</head>
+<body>
+
+    <div class="center-screen">
+        <div class="black-shadow-box" style="padding: 40px; border-radius: 12px;">
+            <h1 class="black-shadow-text">Verification Required</h1>
+            <p class="medium-text black-shadow-text">
+                Your account is not verified yet.<br>
+                We will let you know via email once it has been verified.<br>
+            </p>
+            <a class="button" href="{{ url_for('index') }}">Home</a>
+            <a class="button" href="javascript:history.back()">Back</a>
+        </div>
+    </div>
+
+    <footer>
+        {% include "elements/footer.html" %}
+    </footer>
+</body>
+</html>

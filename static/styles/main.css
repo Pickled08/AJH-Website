@@ -317,3 +317,9 @@ button:active,
 .card:hover .external-link {
     opacity: 1;
 }
+
+.projects-grid {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}

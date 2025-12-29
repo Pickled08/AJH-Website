@@ -1,65 +1,85 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Admin | User lists</title><link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/admin.css') }}"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Admin | User Lists</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/admin.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-
-{% for message in get_flashed_messages() %}
-<div class="alert">
-  <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span> 
-  {{message|safe}}
-</div>
-
-{% endfor %}
-
 <body>
+<div class="container">
 
-<h2>Users</h2>
-<a href="{{url_for('admin')}}">Admin dashboard</a>
-<br>
-<br>
+    {% for message in get_flashed_messages() %}
+        <div class="alert">
+            <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+            {{ message|safe }}
+        </div>
+    {% endfor %}
+
+    <h2>Users</h2>
+    <a href="{{ url_for('admin') }}" class="dashboard-link">← Admin Dashboard</a>
 
 
-<!-- Search form -->
-<form method="get" action="{{ request.path }}">
-      <input type="text" name="search" value="{{ search_query }}" placeholder="Search...">
-      <button type="submit">Search</button>
-</form>
-{% if search_query %}
-<h>Results for: {{search_query}}</h>
-{% endif %}
+    <!-- Search form -->
+    <form method="get" action="{{ request.path }}" class="search-form">
+        <input type="text" name="search" value="{{ search_query }}" placeholder="Search users...">
+        <button type="submit">Search</button>
+        <!-- Future filters: role, date added, status -->
+    </form>
 
-<table>
-  <tr>
-    <th>ID</th>
-    <th>Name</th>
-    <th>Email</th>
-    <th>Date added</th>
-    <th>Is Admin</th>
-    <th>Delete User</th>
-  </tr>
-  {% for user in registeredUsers %}
-  <tr>
-    <th>{{ user.id }}</th>
-    <th>{{ user.name }}</th>
-    <th>{{ user.email }}</th>
-    <th>{{ user.date_added }}</th>
-    <th>{{ user.is_admin }}</th>
-    <th><a href="{{ url_for('admin_delete_user', user_id=user.id) }}">Delete</a></th>
-  </tr>
-  {% endfor %}
-</table>
+    {% if search_query %}
+        <h3>Results for: "{{ search_query }}"</h3>
+    {% endif %}
 
-<div id="pagination">
-  {% if pagination.has_prev %}
-      <a href="{{ request.path }}?page={{ pagination.prev_num }}&search={{ search_query }}">Previous</a>
-  {% endif %}
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Date Added</th>
+            <th>Is Admin</th>
+            <th>Is Verified</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for user in registeredUsers %}
+            <tr>
+                <td data-label="ID">{{ user.id }}</td>
+                <td data-label="Name">{{ user.name }}</td>
+                <td data-label="Email">{{ user.email }}</td>
+                <td data-label="Date Added">{{ user.date_added }}</td>
+                <td data-label="Is Admin">{{ 'Yes' if user.is_admin else 'No' }}</td>
+                <td data-label="Is Verified">{{ 'Yes' if user.is_verified else 'No' }}</td>
+                <td data-label="Actions">
+                    <div class="dropdown">
+                        <button class="dropbtn">•••</button>
+                        <div class="dropdown-content">
+                            <a href="{{ url_for('admin_delete_user', user_id=user.id) }}" onclick="return confirm('Are you sure you want to DELETE this user?')">Delete</a>
+                            <a href="{{ url_for('admin_verify_user', user_id=user.id) }}" onclick="return confirm('Are you sure you want to VERIFY this user?')">Verify</a>
+                            <!-- Future actions: Edit, Reset Password, Toggle Admin -->
+                        </div>
+                    </div>
+                </td>
 
-  Page {{ pagination.page }} of {{ pagination.pages }}
 
-  {% if pagination.has_next %}
-      <a href="{{ request.path }}?page={{ pagination.next_num }}&search={{ search_query }}">Next</a>
-  {% endif %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <div id="pagination">
+        {% if pagination.has_prev %}
+            <a href="{{ request.path }}?page={{ pagination.prev_num }}&search={{ search_query }}">Previous</a>
+        {% endif %}
+
+        Page {{ pagination.page }} of {{ pagination.pages }}
+
+        {% if pagination.has_next %}
+            <a href="{{ request.path }}?page={{ pagination.next_num }}&search={{ search_query }}">Next</a>
+        {% endif %}
+    </div>
 </div>
 </body>
 </html>
