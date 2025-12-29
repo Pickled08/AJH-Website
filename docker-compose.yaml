@@ -2,11 +2,18 @@ version: "3.9"
 
 services:
   web:
+    container_name: ajh-website
+    image: ajh-website_web
     build: .
+
+    command: python /app/src/server.py
+
     ports:
       - "8080:8080"
-    env_file:
-      - .env
+
     volumes:
-      - .:/app
-    command: python server.py
+      - /home/rpi2b/AJH-website/AJH-Website/.env:/app/.env
+      - /home/rpi2b/AJH-website/AJH-Website/instance:/app/instance
+      - /home/rpi2b/AJH-website/AJH-Website:/app/src
+
+    restart: unless-stopped
