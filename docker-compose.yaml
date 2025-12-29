@@ -12,9 +12,9 @@ services:
       - "8080:8080"
 
     volumes:
-      - /home/rpi2b/AJH-website/.env:/app/.env
-      - /home/rpi2b/AJH-website/instance:/app/instance
-      - /home/rpi2b/AJH-website/src:/app/src
-      - /home/rpi2b/AJH-website/migrations:/app/migrations
+      - /home/rpi2b/AJH-Website/.env:/app/.env
+      - /home/rpi2b/AJH-Website/instance:/app/instance
+      - /home/rpi2b/AJH-Website/src:/app/src
+      - /home/rpi2b/AJH-Website/migrations:/app/migrations
 
     restart: unless-stopped
