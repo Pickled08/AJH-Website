@@ -65,6 +65,7 @@ class Users(db.Model, UserMixin):
     date_added = db.Column(db.DateTime, default=datetime.now(UTC))
 
     is_admin = db.Column(db.Boolean, default=False)
+    is_verified = db.Column(db.Boolean, default=False)
 
     #Password
     password_hash = db.Column(db.String(128))
