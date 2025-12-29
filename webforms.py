@@ -28,7 +28,3 @@ class BlogForm(FlaskForm):
 class CommentForm(FlaskForm):
     body = body = StringField("Body")
     submit = SubmitField("Post")
-
-class TTSForm(FlaskForm):
-    input = StringField("Input", validators=[DataRequired(), Length(max=20)])
-    submit = SubmitField("Send")
