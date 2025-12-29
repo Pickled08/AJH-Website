@@ -4,10 +4,10 @@ set -e
 echo "Pulling latest code..."
 git pull
 
-echo "Stopping and removing old containers..."
-docker-compose down
+echo "Removing old container if it exists..."
+docker rm -f ajh-website || true
 
-echo "Building and starting fresh..."
+echo "Building and restarting with Docker Compose..."
 docker-compose up -d --build
 
 echo "Update complete"
