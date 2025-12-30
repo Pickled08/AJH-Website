@@ -578,6 +578,7 @@ def admin_delete_user(user_id):
 # Verify user (secure version)
 @app.route("/admin/users/verify/<user_id>", methods=["GET", "POST"], endpoint="admin_verify_user")
 @login_required
+@admin_required
 def admin_verify_user(user_id):
     user = Users.query.get(user_id)
 
