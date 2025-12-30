@@ -7,3 +7,7 @@ __pycache__/
 .vscode/
 .env
 .db
+nginx
+instance
+migrations
+.gitignore

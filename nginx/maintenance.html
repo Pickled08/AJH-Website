@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Maintenance</title>
+    <style>
+        /* Base Reset & Globals */
+        * { box-sizing: border-box; }
+        html, body { 
+            margin: 0; 
+            height: 100%; 
+            font-family: "OCR A Std", monospace;
+            background-color: #1C2321; 
+            color: #EEF1EF;
+        }
+
+        /* Centered Layout */
+        .center-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* Shadow Box */
+        .black-shadow-box {
+            background-color: #0B0E0D;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+            border-radius: 8px;
+            padding: 40px;
+            max-width: 600px;
+            width: 90%;
+        }
+
+        /* Typography */
+        h1 { font-size: 5rem; margin-bottom: 20px; text-shadow: 2px 2px 4px #0B0E0D; }
+        h2 { font-size: 2rem; margin-bottom: 20px; text-shadow: 2px 2px 4px #0B0E0D; }
+        p  { font-size: 1rem; line-height: 1.5; color: #EEF1EF; margin-bottom: 30px; }
+
+        /* Button */
+        .button {
+            background-color: #0B0E0D;
+            color: #EEF1EF;
+            border: none;
+            padding: 12px 28px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            border-radius: 4px;
+        }
+
+        .button:hover {
+            background-color: #313F44;
+            transform: translateY(-1px);
+        }
+
+        /* Optional Sub-box */
+        .sub-box {
+            background-color: #0B0E0D;
+            color: #A9B4C2;
+            padding: 20px;
+            border-radius: 6px;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+
+    <main class="center-screen">
+        <div class="black-shadow-box">
+
+            <!-- Maintenance Icon -->
+            <h1>⚠️</h1>
+
+            <!-- Maintenance Heading -->
+            <h2>We'll be back soon!</h2>
+
+            <!-- Message -->
+            <p>
+                Our site is currently undergoing scheduled maintenance.<br>
+                We apologize for the inconvenience and appreciate your patience.
+            </p>
+
+            <!-- Homepage Button -->
+            <a href="/" class="button">Go to Homepage</a>
+
+            <!-- Optional Info Box -->
+            <div class="sub-box">
+                <p>Estimated downtime: <5 minutes</p>
+            </div>
+
+        </div>
+    </main>
+
+</body>
+</html>
