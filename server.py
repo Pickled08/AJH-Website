@@ -550,13 +550,6 @@ def admin_delete_user(user_id):
         flash("You cannot delete yourself.")
         return redirect(url_for("admin_pages", page="users"))
 
-    # Optional: prevent deleting the last admin
-    if user.is_admin:
-        admin_count = Users.query.filter_by(is_admin=True).count()
-        if admin_count <= 1:
-            flash("Cannot delete the last remaining admin.")
-            return redirect(url_for("admin_pages", page="users"))
-
     # POST: confirm deletion
     if request.method == "POST":
         user_choice = request.form.get("choice")
