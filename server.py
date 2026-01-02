@@ -1,6 +1,6 @@
 #Imports
 from flask import Flask
-from flask import render_template, abort, redirect, url_for, flash, request, make_response, g
+from flask import render_template, abort, redirect, url_for, flash, request, make_response, g, Response
 import os
 from dotenv import load_dotenv
 from webforms import LoginForm, RegisterForm, BlogForm, CommentForm
@@ -670,6 +670,18 @@ def verified_area():
 @app.route("/googleb06d0983f852e6e7.html")
 def google_verification():
     return render_template("se/googleb06d0983f852e6e7.html")
+
+@app.route("/health", methods=["GET"])
+def health():
+    return Response(
+        "ok",
+        status=200,
+        mimetype="text/plain",
+        headers={
+            "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"
+        }
+    )
+
 
 
 #Functions to run the server
