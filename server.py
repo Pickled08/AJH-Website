@@ -1,6 +1,6 @@
 #Imports
 from flask import Flask
-from flask import render_template, abort, redirect, url_for, flash, request
+from flask import render_template, abort, redirect, url_for, flash, request, make_response, g
 import os
 from dotenv import load_dotenv
 from webforms import LoginForm, RegisterForm, BlogForm, CommentForm
@@ -18,6 +18,9 @@ from flask import abort
 from flask_login import current_user
 from flask_wtf import CSRFProtect
 from datetime import datetime, timezone
+from werkzeug.exceptions import HTTPException
+import logging
+
 
 load_dotenv()
 
@@ -60,6 +63,13 @@ app.config["DEBUG"] = False
 app.config["RECAPTCHA_PUBLIC_KEY"] = RECAPTCHA_PUBLIC_KEY
 app.config["RECAPTCHA_PRIVATE_KEY"] = RECAPTCHA_PRIVATE_KEY
 app.url_map.strict_slashes = False
+
+# Secure session cookie settings
+app.config.update(
+    SESSION_COOKIE_SECURE=True,    # Only over HTTPS
+    SESSION_COOKIE_HTTPONLY=True,  # Prevent JS access
+    SESSION_COOKIE_SAMESITE='Lax', # CSRF protection
+)
 
 # Initialize CSRF protection
 csrf = CSRFProtect(app)
@@ -119,6 +129,7 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
 login_manager.login_message = "Please Login"
+login_manager.session_protection = "strong"
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -473,15 +484,59 @@ def logout():
 def account():
     return render_template("account.html", pageName="Account")
 
-@app.errorhandler(Exception)
-def handle_error(e):
-    code = getattr(e, 'code', 500)  # default to 500 if no code
-    if code == 401:
-        return render_template('error_codes/401.html', pageName="401"), 401
-    elif code == 404:
-        return render_template('error_codes/404.html', pageName="404"), 404
+# HTTP errors (4xx / some 5xx)
+@app.errorhandler(HTTPException)
+def handle_http_error(e):
+    code = e.code or 500
+
+    if code >= 500:
+        logging.error("HTTP %s error", code, exc_info=True)
     else:
-        return render_template('error_codes/generic_error.html', pageName=str(code), errorTitle="Error", errorExplain=str(e)), code
+        logging.warning("HTTP %s: %s", code, e)
+
+    if code == 401:
+        resp = make_response(
+            render_template("error_codes/401.html"),
+            401
+        )
+    elif code == 404:
+        resp = make_response(
+            render_template("error_codes/404.html"),
+            404
+        )
+    else:
+        resp = make_response(
+            render_template(
+                "error_codes/generic_error.html",
+                pageName=str(code),
+                errorTitle="Error"
+            ),
+            code
+        )
+
+    resp.headers["Cache-Control"] = "no-store"
+    return resp
+
+
+# Non-HTTP exceptions → real 500s
+@app.errorhandler(Exception)
+def handle_unexpected_error(e):
+    logging.critical("Unhandled exception", exc_info=True)
+
+    resp = make_response(
+        render_template(
+            "error_codes/generic_error.html",
+            pageName="500",
+            errorTitle="Internal Server Error"
+        ),
+        500
+    )
+    resp.headers["Cache-Control"] = "no-store"
+    return resp
+
+@app.before_request
+def log_request_id():
+    g.request_id = request.headers.get("CF-Ray", "local")
 
 #Admin Page
 @app.route("/admin")
@@ -605,11 +660,16 @@ def admin_verify_user(user_id):
     # GET: show confirmation page
     return render_template("confirm.html", pageName="Confirm")
 
+#Verified Check Page
 @app.route("/verified-check")
+@login_required
 @Verification_required
 def verified_area():
     return "You are verified!"
 
+@app.route("/googleb06d0983f852e6e7.html")
+def google_verification():
+    return render_template("se/googleb06d0983f852e6e7.html")
 
 
 #Functions to run the server
