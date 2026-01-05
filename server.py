@@ -1,6 +1,6 @@
 #Imports
 from flask import Flask
-from flask import render_template, abort, redirect, url_for, flash, request, make_response, g, Response
+from flask import render_template, abort, redirect, url_for, flash, request, make_response, g, Response, send_file
 import os
 from dotenv import load_dotenv
 from webforms import LoginForm, RegisterForm, BlogForm, CommentForm
@@ -387,7 +387,7 @@ def github():
 #Sitemap
 @app.route("/sitemap")
 def sitemap():
-    abort(404)
+    return(send_file("site_files/sitemap.xml"))
 
 #Privacy Policy Page
 @app.route("/policies/privacy")
@@ -482,7 +482,10 @@ def logout():
 @app.route("/account")
 @login_required
 def account():
-    return render_template("account.html", pageName="Account")
+    number_of_blogs = Blogs.query.filter_by(author=current_user.id).count()
+    number_of_comments = Comments.query.filter_by(user_id=current_user.id).count()
+    
+    return render_template("account.html", pageName="Account", number_of_blogs=number_of_blogs, number_of_comments=number_of_comments)
 
 # HTTP errors (4xx / some 5xx)
 @app.errorhandler(HTTPException)
