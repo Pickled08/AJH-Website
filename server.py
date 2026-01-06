@@ -161,6 +161,10 @@ def about():
 def projects():
     return(render_template("projects.html", pageName="Projects"))
 
+@app.route("/projects/website")
+def project_website():
+    return(render_template("project_website.html", pageName="Projects - This Website"))
+
 #Blog Page
 from sqlalchemy import or_, func
 import re
