@@ -14,10 +14,17 @@
         <p>The website features a blog, project pages, an about page and a contact form. It also has user authentication for logging in and managing accounts.</p>
         <p>All source code is available on my GitHub apart from the nginx configuration as Im not sure how safe it is to share.</p>
 
+        <h1>Flask</h1>
+        <p>I chose to use flask mainly because i have used it before and it's a great framework for building web applications in Python. It's simple to use and has a lot of features that make it easy to build complex applications. The benifit of using python for this is due to the many libraries available for web development and data processing at my fingertips that are easy to get running (I am also best at python so that helps ;)). I have made good use of flask libraries such as Flask-WTF for form handling and Flask-Login for user authentication.</p>
+
         <h1>Nginx</h1>
         <p>Im using Nginx to acts as a reverse proxy for the Flask application, handling incoming requests and routing them to the appropriate backend services. This makes it so much easier to manage the server and handle traffic efficiently as im not directly accesing the flask backend. This is why I can have the maintanance page working whilest the flask server is down and it also handels the cloudflare Certificates for me. As I said makes it some much better than just using flask, and if I ever need to change the server or add more services, it's much easier to do so with Nginx.</p>
 
-
+        <h1>Docker</h1>
+        <p>Docker is being used to containerize the Flask application, making it easier to deploy and manage. Each component of the website (Flask app, Nginx server) runs in its own container, ensuring that they are isolated from each other and can be managed independently. This setup allows for easy updates and scalability, as I can simply update the Docker images or add more containers as needed without affecting the overall system. This also means I can switch between different host machines easily and i know it just works</p>
+        
+        <h1>Source Code</h1>
+        <p>The source code for this website is available on my GitHub: <a href={{ url_for('github') }} target="_blank">GitHub Repository <span class="external-link">🔗</span></a></p>
         <footer>{% include "elements/footer.html" %}</footer>
 
     </body>

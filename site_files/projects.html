@@ -6,7 +6,21 @@
 
     <body>
         
-        <a href="{{url_for('project_website')}}">This ebsite</a>
+            <section class="featured-projects">
+                <h2 class="large-text">My Projects</h2>
+                <div class="projects-grid">
+                    <a href="{{ url_for('project_website') }}" class="card-link">
+                        <div class="card">
+                            <img src="{{ url_for('static', filename='images/project.png') }}" class="card-img" alt="This Website!">
+                            <div class="card-content">
+                                <p class="bold">This Website!</p>
+                                <p class="small-text gray-text">A web app built with Flask</p>
+                            </div>
+                        </div>
+                    </a>
+                    <!-- Add more cards -->
+                </div>
+            </section>
     
         <footer>{% include "elements/footer.html" %}</footer>
 
