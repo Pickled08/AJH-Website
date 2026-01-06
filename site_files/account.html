@@ -49,7 +49,12 @@
             <section style="margin-top: 30px;">
                 <!-- Placeholder for widgets, embeds, or future features -->
                 <div class="black-shadow-box" style="padding: 20px; text-align: center; color: #A9B4C2;">
-                    <p>More content coming soon...</p>
+                    <h2 class="medium-text">Latest Blog Post</h2>
+                    {% if latest_blog %}
+                        <p class="small-text">{{ latest_blog[0].title }} ({{ latest_blog[0].date_posted.strftime('%b %d, %Y') }})</p>
+                    {% else %}
+                        <p class="small-text">You haven't posted any blogs yet.</p>
+                    {% endif %}
                 </div>
             </section>
 

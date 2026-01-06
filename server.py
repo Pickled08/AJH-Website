@@ -486,10 +486,12 @@ def logout():
 @app.route("/account")
 @login_required
 def account():
-    number_of_blogs = Blogs.query.filter_by(author=current_user.id).count()
+    blogs = Blogs.query.filter_by(author=current_user.id)
+    latest_blog = blogs.order_by(Blogs.date_posted.desc()).limit(1).all()
+    number_of_blogs = blogs.count()
     number_of_comments = Comments.query.filter_by(user_id=current_user.id).count()
     
-    return render_template("account.html", pageName="Account", number_of_blogs=number_of_blogs, number_of_comments=number_of_comments)
+    return render_template("account.html", pageName="Account", number_of_blogs=number_of_blogs, number_of_comments=number_of_comments, latest_blog=latest_blog)
 
 # HTTP errors (4xx / some 5xx)
 @app.errorhandler(HTTPException)
