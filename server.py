@@ -270,6 +270,7 @@ def blog_read(slug):
         comments_full.append({
             "body": comment.body,
             "author_name": user.name if user else "Unknown",
+            "author_id": user.id if user else "Unknown",
             "date_posted": comment.date_posted.strftime("%Y-%m-%d %H:%M:%S")
         })
 
@@ -492,6 +493,18 @@ def account():
     number_of_comments = Comments.query.filter_by(user_id=current_user.id).count()
     
     return render_template("account.html", pageName="Account", number_of_blogs=number_of_blogs, number_of_comments=number_of_comments, latest_blog=latest_blog)
+
+#User Profile Page
+@app.route("/user/<int:user_id>")
+def user_profile(user_id):
+    if current_user.is_authenticated and current_user.id == user_id:
+        return redirect(url_for("account"))
+    user = Users.query.get_or_404(user_id)
+    blogs = Blogs.query.filter_by(author=user.id).order_by(Blogs.date_posted.desc()).all()
+    number_of_blogs = len(blogs)
+    number_of_comments = Comments.query.filter_by(user_id=user.id).count()
+
+    return render_template("user_profile.html", pageName="User Profile", user=user, blogs=blogs, number_of_blogs=number_of_blogs, number_of_comments=number_of_comments)
 
 # HTTP errors (4xx / some 5xx)
 @app.errorhandler(HTTPException)

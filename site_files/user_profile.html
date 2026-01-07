@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% include "elements/head.html" %}
+</head>
+
+<body>
+
+    {% include "elements/navbar.html" %}
+
+    <main class="center-screen" style="padding: 40px 20px; min-height: calc(100vh - 100px);">
+        <div class="post-blog black-shadow-box" style="max-width: 900px; width: 100%; padding: 40px; display: flex; flex-direction: column; gap: 30px;">
+
+            <!-- Greeting -->
+            <h1 class="x-large-text black-shadow-text" style="margin-bottom: 10px;">
+                {{ user.name }}'s Profile
+            </h1>
+
+            <!-- Quick Action Buttons -->
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                <a class="button" href="{{ url_for('blog') }}?search=EXACTUSER%3A{{ user.name }}">
+                    Find all blogs
+                </a>
+            </div>
+
+            <!-- Stats / Summary Section -->
+            <section style="display: flex; flex-wrap: wrap; gap: 20px; margin-top: 20px;">
+                <div class="black-shadow-box" style="flex: 1 1 200px; padding: 20px; text-align: center;">
+                    <h2 class="medium-text">Blogs Posted</h2>
+                    <p class="medium-text">{{ number_of_blogs }}</p>
+                </div>
+                <div class="black-shadow-box" style="flex: 1 1 200px; padding: 20px; text-align: center;">
+                    <h2 class="medium-text">Comments Made</h2>
+                    <p class="medium-text">{{ number_of_comments }}</p>
+                </div>
+                <div class="black-shadow-box" style="flex: 1 1 200px; padding: 20px; text-align: center;">
+                    <h2 class="medium-text">Account Created</h2>
+                    <p class="medium-text">{{ user.date_added.strftime('%b %d, %Y') }}</p>
+                </div>
+            </section>
+
+            <!-- Future Content Section -->
+            <section style="margin-top: 30px;">
+                <!-- Placeholder for widgets, embeds, or future features -->
+                <div class="black-shadow-box" style="padding: 20px; text-align: center; color: #A9B4C2;">
+                    <h2 class="medium-text">Latest Blog Post</h2>
+                    {% if latest_blog %}
+                        <p class="small-text">{{ latest_blog[0].title }} ({{ latest_blog[0].date_posted.strftime('%b %d, %Y') }})</p>
+                        <a class="button" href="{{ url_for('blog_read', slug=latest_blog[0].slug) }}">Read it</a>
+                    {% else %}
+                        <p class="small-text">{{ user.name }} hasn't posted any blogs yet.</p>
+                    {% endif %}
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <footer>
+        {% include "elements/footer.html" %}
+    </footer>
+
+</body>
+</html>

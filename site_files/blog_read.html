@@ -42,7 +42,7 @@
             <div class="comment black-shadow-box" style="margin-bottom: 14px; padding: 12px;">
                 <p class="xx-small-text comment-text">{{ comment.date_posted }}</p> <!-- Date -->
                 <p class="comment-text">{{ comment.body }}</p>                        <!-- Body -->
-                <p class="comment-text bold">{{ comment.author_name }}</p>           <!-- Author -->
+                <a href="{{ url_for('user_profile', user_id=comment.author_id) }}" class="comment-text bold">{{ comment.author_name }}</a>           <!-- Author -->
             </div>
             {% endfor %}
 
