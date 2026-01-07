@@ -13,7 +13,7 @@
         <!-- Blog post -->
         <div class="blog black-shadow-box" style="padding: 28px; margin: 28px;">
             <h1 class="bold">{{ blog.title }}</h1>
-            <p class="small-text">by {{ author }} | {{ date_posted }}</p>
+            <p class="small-text">by <a href="{{ url_for('user_profile', user_id=author_id) }}">{{ author }}</a> | {{ date_posted }}</p>
             <hr style="border-color: #313F44; margin: 12px 0;">
             <p>{{ blog.body | safe }}</p>
 
