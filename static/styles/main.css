@@ -323,3 +323,106 @@ button:active,
     gap: 20px;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 }
+
+/* ===== Account Settings Blog List ===== */
+.account-settings-blog-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: block; /* vertical stack of blog items */
+}
+
+.account-settings-blog-item {
+    display: flex;                 /* row layout for title + button */
+    justify-content: space-between;/* push button to right */
+    align-items: center;           /* vertically center content */
+    padding: 0.75em 1em;
+    border-bottom: 1px solid #ddd;
+    gap: 8px;
+}
+
+.account-settings-blog-item a {
+    flex-grow: 1;       /* take up remaining space */
+    text-decoration: none;
+    color: inherit;
+    font-weight: bold;
+}
+
+.account-settings-options-btn {
+    background: none;
+    border: 1px solid #313F44;
+    color: #EEF1EF;
+    padding: 4px 10px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.account-settings-options-btn:hover {
+    background-color: #313F44;
+}
+
+.account-settings-options {
+    position: relative;
+    display: inline-block;
+}
+
+.account-settings-dropdown {
+    display: none;                 /* hidden by default */
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background-color: #0B0E0D;
+    border: 1px solid #313F44;
+    border-radius: 4px;
+    padding: 4px;
+    min-width: 100px;
+    z-index: 100;
+}
+
+.account-settings-dropdown a {
+    display: block;
+    color: #fff;
+    padding: 6px 10px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    border-radius: 3px;
+}
+
+.account-settings-dropdown a:hover {
+    background-color: #D9534F;
+    color: #fff;
+}
+
+/* Style for the red delete button inside dropdown */
+.account-settings-delete-btn {
+    color: #fff;
+    background-color: #D9534F;
+    text-align: center;
+    border-radius: 3px;
+}
+
+.manage-blogs-label {
+    cursor: pointer;
+    user-select: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+
+.triangle {
+    font-size: 2rem;   /* increase size (default was 1rem) */
+    transition: transform 0.2s ease;
+}
+
+.triangle:hover {
+    transform: scale(1.2); /* grow a bit on hover */
+}
+
+.triangle.open {
+    transform: rotate(180deg); /* triangle points up when open */
+}
+
+

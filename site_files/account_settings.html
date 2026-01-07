@@ -1,14 +1,57 @@
 <!DOCTYPE html>
 <html>
-    <head>{% include "elements/head.html" %}</head>
+<head>
+    {% include "elements/head.html" %}
+</head>
+
+<body>
 
     {% include "elements/navbar.html" %}
 
-    <body>
+    <div class="container account-settings-container">
+            <div class="container account-settings-container">
+                <h1>Account Settings</h1>
 
-        
+                <div class="account-settings-header">
+                    <h2 class="manage-blogs-label">
+                        Manage Blogs
+                        <span class="triangle" onclick="toggleBlogList()">▾</span>
+                    </h2>
+                </div>
 
-        <footer>{% include "elements/footer.html" %}</footer>
+                <!-- Blog list dropdown -->
+                <div id="blog-list-container" style="display: none;">
+                    {% if user_blogs %}
+                    <ul class="account-settings-blog-list">
+                        {% for blog in user_blogs %}
+                            <li class="account-settings-blog-item">
+                                <a href="{{ url_for('blog_read', slug=blog.slug) }}">
+                                    {{ blog.title }} - Posted on {{ blog.date_posted.strftime('%b %d, %Y') }}
+                                </a>
 
-    </body>
+                                <!-- Options wrapper -->
+                                <div class="account-settings-options">
+                                    <button class="account-settings-options-btn" onclick="toggleOptions(this)">•••</button>
+
+                                    <!-- Hidden menu -->
+                                    <div class="account-settings-dropdown">
+                                        <a href="{{ url_for('delete_blog', id=blog.id) }}" class="account-settings-delete-btn">
+                                            Delete
+                                        </a>
+                                    </div>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                        <p>No blogs found.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+    </div>
+
+    <footer>{% include "elements/footer.html" %}</footer>
+
+</body>
 </html>

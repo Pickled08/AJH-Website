@@ -111,7 +111,7 @@ class Blogs(db.Model):
     title = db.Column(db.String(255))
     body = db.Column(db.Text)
     slug = db.Column(db.String(255))
-    author = db.Column(db.String(255))
+    author = db.Column(db.Integer)
     date_posted = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
 
@@ -119,8 +119,8 @@ class Blogs(db.Model):
 class Comments(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.String(255))
-    post_id = db.Column(db.String(255))
-    user_id = db.Column(db.String(255))
+    post_id = db.Column(db.Integer)
+    user_id = db.Column(db.Integer)
     date_posted = db.Column(db.DateTime, default=datetime.now(UTC))
 
 
@@ -493,6 +493,24 @@ def account():
     number_of_comments = Comments.query.filter_by(user_id=current_user.id).count()
     
     return render_template("account.html", pageName="Account", number_of_blogs=number_of_blogs, number_of_comments=number_of_comments, latest_blog=latest_blog)
+
+#Account Settings Page
+@app.route("/account/settings") 
+@login_required
+def account_settings():
+
+    user_blogs = (
+        Blogs.query
+        .filter(Blogs.author == current_user.id)
+        .order_by(Blogs.date_posted.desc())
+        .all()
+    )
+
+    return render_template(
+        "account_settings.html",
+        pageName="Account Settings",
+        user_blogs=user_blogs
+    )
 
 #User Profile Page
 @app.route("/user/<int:user_id>")
