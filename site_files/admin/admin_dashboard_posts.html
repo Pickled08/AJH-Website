@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Admin | User Lists</title>
+    <title>Admin | Blogs / Comments Lists</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/admin.css') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
@@ -35,32 +35,26 @@
         <thead>
         <tr>
             <th>ID</th>
-            <th>Name</th>
-            <th>Email</th>
+            <th>Title</th>
+            <th>Author</th>
             <th>Date Added</th>
-            <th>Is Admin</th>
-            <th>Is Verified</th>
             <th>Actions</th>
         </tr>
         </thead>
         <tbody>
-        {% for user in registeredUsers %}
+        {% for blog in blogs %}
             <tr>
-                <td data-label="ID">{{ user.id }}</td>
-                <td data-label="Name">{{ user.name }}</td>
-                <td data-label="Email">{{ user.email }}</td>
-                <td data-label="Date Added">{{ user.date_added }}</td>
-                <td data-label="Is Admin">{{ 'Yes' if user.is_admin else 'No' }}</td>
-                <td data-label="Is Verified">{{ 'Yes' if user.is_verified else 'No' }}</td>
+                <td data-label="ID">{{ blog.id }}</td>
+                <td data-label="Title">{{ blog.title }}</td>
+                <td data-label="Author ">{{ author_map.get(blog.author, "Unknown") }}</td>
+                <td data-label="Date Added">{{ blog.date_posted }}</td>
                 <td data-label="Actions">
                     <div class="dropdown">
                         <button class="dropbtn">•••</button>
                         <div class="dropdown-content">
-                        {% if not user.is_verified %}
-                            <a href="{{ url_for('admin_verify_user', user_id=user.id) }}" onclick="return confirm('Are you sure you want to VERIFY this user?')">Verify</a>
-                        {% endif %}
-                            <a href="{{ url_for('admin_delete_user', user_id=user.id) }}" onclick="return confirm('Are you sure you want to DELETE this user?')">Delete</a>
-                            <!-- Future actions: Edit, Reset Password, Toggle Admin -->
+                            <a href="{{ url_for('blog_read', slug=blog.slug) }}" onclick="return confirm('Read this Blog on the main site')">Read</a>
+                            <a href="" onclick="return confirm('Manage this Blog')">Manage</a>
+                            <a href="{{ url_for('admin_delete_blog', blog_id=blog.id) }}" onclick="return confirm('Are you sure you want to DELETE this blog?')">Delete</a>
                         </div>
                     </div>
                 </td>

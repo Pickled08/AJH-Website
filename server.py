@@ -5,7 +5,7 @@ import os
 from dotenv import load_dotenv
 from webforms import LoginForm, RegisterForm, BlogForm, CommentForm
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import desc, or_
+from sqlalchemy import desc, or_, func
 from flask_migrate import Migrate
 from datetime import datetime, UTC
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -166,8 +166,6 @@ def project_website():
     return(render_template("project_website.html", pageName="Projects - This Website"))
 
 #Blog Page
-from sqlalchemy import or_, func
-import re
 
 @app.route("/blog")
 def blog():
@@ -629,6 +627,47 @@ def admin_pages(page):
             pagination=pagination,
             search_query=search_query
         )
+    
+    if page == "posts":
+        # Pagination vars
+        page_num = request.args.get('page', 1, type=int)
+        per_page = 20
+
+        search_query = request.args.get('search', '', type=str)
+
+        # Initialize the query
+        query = Blogs.query
+
+        # Filter if search term exists
+        if search_query:
+            query = query.filter(
+                or_(
+                    Blogs.title.ilike(f"%{search_query}%"),
+                    Blogs.body.ilike(f"%{search_query}%")
+                )
+            )
+
+        # Paginate results
+        pagination = query.order_by(Blogs.date_posted.desc()).paginate(
+            page=page_num,
+            per_page=per_page,
+            error_out=False
+        )
+        blogs = pagination.items
+
+        author_ids = {blog.author for blog in blogs}
+        authors = Users.query.filter(Users.id.in_(author_ids)).all()
+        print(authors)
+        author_map = {u.id: u.name for u in authors}
+
+        return render_template(
+            "admin/admin_dashboard_posts.html",
+            blogs=blogs,
+            author_map=author_map,
+            pagination=pagination,
+            search_query=search_query
+        )
+
 
     # If the page is unknown, return 404
     abort(404)
@@ -666,6 +705,33 @@ def admin_delete_user(user_id):
                 return redirect(url_for("admin_pages", page="users"))
         else:
             return redirect(url_for("admin_pages", page="users"))
+
+    # GET: show confirmation page
+    return render_template("confirm.html", pageName="Confirm")
+
+# Delete blog (secure version)
+@app.route("/admin/blog/delete/<blog_id>", methods=["GET", "POST"], endpoint="admin_delete_blog")
+@login_required
+def admin_delete_blog(blog_id):
+    blog = Blogs.query.get(blog_id)
+
+    # POST: confirm deletion
+    if request.method == "POST":
+        user_choice = request.form.get("choice")
+        if user_choice == "yes":
+            try:
+                # Delete blog
+                Blogs.query.filter_by(id=blog.id).delete()
+                db.session.commit()
+
+                flash(f"Blog {blog.title} deleted successfully.")
+                return redirect(url_for("admin_pages", page="posts"))
+            except Exception as e:
+                db.session.rollback()
+                flash(f"An error occurred: {str(e)}")
+                return redirect(url_for("admin_pages", page="posts"))
+        else:
+            return redirect(url_for("admin_pages", page="posts"))
 
     # GET: show confirmation page
     return render_template("confirm.html", pageName="Confirm")
