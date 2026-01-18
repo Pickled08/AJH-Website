@@ -672,6 +672,13 @@ def admin_pages(page):
     # If the page is unknown, return 404
     abort(404)
 
+# Admin Manage Post Page
+@login_required
+@admin_required
+@app.route("/admin/posts/manage/<post_id>", methods=["GET", "POST"])
+def admin_manage_post(post_id):
+    return render_template("admin/admin_dashboard_posts_manage.html")
+    
 
 # Delete user (secure version)
 @app.route("/admin/users/delete/<user_id>", methods=["GET", "POST"], endpoint="admin_delete_user")
